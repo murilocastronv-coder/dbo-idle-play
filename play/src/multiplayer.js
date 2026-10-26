@@ -27,6 +27,24 @@ function renderRoster(list) {
   list.append(players);
 }
 function showPanel() {
+  if (!document.getElementById('dbo-mp-styles')) {
+    const style = make('style');
+    style.id = 'dbo-mp-styles';
+    style.textContent = `
+      .dbo-mp-panel{position:fixed;right:12px;bottom:12px;z-index:99999;width:min(300px,calc(100vw - 24px));background:#101923ee;color:#eaf3ff;border:1px solid #4b647a;border-radius:12px;padding:10px;font:12px/1.4 system-ui,sans-serif;box-shadow:0 8px 28px #0008}
+      .dbo-mp-title{font-weight:800;font-size:13px;margin-bottom:7px;color:#8be9fd}
+      .dbo-mp-players{max-height:95px;overflow:auto;margin-bottom:6px}
+      .dbo-mp-player{padding:3px 0}.dbo-mp-player:first-letter{color:#57e389}
+      .dbo-mp-muted,.dbo-mp-status{color:#b8c7d8;font-size:11px;padding:4px 0}
+      .dbo-mp-chat-log{height:90px;overflow:auto;border-top:1px solid #34485b;padding-top:5px;margin-top:5px}
+      .dbo-mp-chat-line{overflow-wrap:anywhere;padding:2px 0}
+      .dbo-mp-chat-form{display:flex;gap:5px;margin-top:6px}
+      .dbo-mp-chat-input{min-width:0;flex:1;background:#1d2a38;color:white;border:1px solid #4b647a;border-radius:6px;padding:7px}
+      .dbo-mp-send{background:#1877d2;color:white;border:0;border-radius:6px;padding:7px 10px}
+      @media(max-width:600px){.dbo-mp-panel{bottom:8px;right:8px;width:min(270px,calc(100vw - 16px));opacity:.96}.dbo-mp-chat-log{height:65px}}
+    `;
+    document.head.append(style);
+  }
   let panel = document.getElementById('dbo-multiplayer-panel');
   if (panel) return panel;
   panel = make('section', 'dbo-mp-panel');
