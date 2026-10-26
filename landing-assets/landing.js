@@ -55,3 +55,21 @@
     .then((data) => setServerStatus(true, data?.version || ''))
     .catch(() => setServerStatus(false));
 })();
+
+  
+  // Live counters are supplied by the multiplayer service. Account totals stay
+  // unavailable until persistent server-side accounts are implemented.
+  fetch('https://dbo-idle-multiplayer-server.onrender.com/api/stats', { cache: 'no-store' })
+    .then((r) => r.ok ? r.json() : Promise.reject(new Error('stats offline')))
+    .then((data) => {
+      const online = document.getElementById('dbo-online-count');
+      const accounts = document.getElementById('dbo-account-count');
+      if (online) online.textContent = Number.isFinite(data.onlinePlayers) ? String(data.onlinePlayers) : '—';
+      if (accounts) accounts.textContent = Number.isFinite(data.totalAccounts) ? String(data.totalAccounts) : 'Em breve';
+    })
+    .catch(() => {
+      const online = document.getElementById('dbo-online-count');
+      const accounts = document.getElementById('dbo-account-count');
+      if (online) online.textContent = '—';
+      if (accounts) accounts.textContent = 'Em breve';
+    });
