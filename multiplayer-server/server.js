@@ -5,6 +5,13 @@ const WebSocket = require('ws');
 
 const app = express();
 app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.get('/', (_req, res) => res.json({
   name: 'DBO Idle Multiplayer Server',
   status: 'online',
@@ -12,6 +19,12 @@ app.get('/', (_req, res) => res.json({
   onlinePlayers: players.size
 }));
 app.get('/health', (_req, res) => res.json({ ok: true, onlinePlayers: players.size }));
+app.get('/api/stats', (_req, res) => res.json({
+  onlinePlayers: players.size,
+  totalAccounts: null,
+  accountsAvailable: false,
+  message: 'Account totals require persistent account storage.'
+}));
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true, maxPayload: 16 * 1024 });
