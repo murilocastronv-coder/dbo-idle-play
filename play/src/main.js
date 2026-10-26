@@ -23,6 +23,7 @@ import {
 } from './core/storage.js?v=22.4.4';
 import { characters } from './data/game-content.js?v=22.4.4';
 import { currentTransformationForm } from './core/transformations/transformation-engine.js?v=21.26.4';
+import { startMultiplayer, stopMultiplayer } from './multiplayer.js?v=1';
 
 const CLIENT_VERSION = '21.26.4';
 const EMBEDDED_CLIENT_BUILD = '22.4.4';
@@ -539,6 +540,7 @@ function launchCharacter(state) {
         }else{
           await flushCharacterSave(characterId).catch(()=>{});
         }
+        stopMultiplayer();
         const freshAccount=await currentAccount().catch(()=>null);
         if(freshAccount)account=freshAccount;
         activeApp=null;
@@ -547,6 +549,7 @@ function launchCharacter(state) {
       void finishSwitch();
     }
   });
+  startMultiplayer(state);
   window.addEventListener(
     'pagehide',
     () => {
@@ -554,6 +557,7 @@ function launchCharacter(state) {
       // O WebSocket autoritativo entra em farming de protecao e continua sendo
       // a unica fonte de progresso durante a queda/fechamento.
       discardCharacterSave(characterId);
+      stopMultiplayer();
     },
     {once:true}
   );
