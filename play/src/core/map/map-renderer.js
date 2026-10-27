@@ -657,7 +657,9 @@ export class MapRenderer {
     this.paintAmbient(p, ambient);
 
     const actors=[
-      ...this.others.map(x=>({...x,local:false})),
+      ...this.others
+        .filter(other=>(other.z??this.player.z)===this.player.z)
+        .map(x=>({...x,local:false})),
       ...this.npcs
         .filter(npc=>(npc.z??this.player.z)===this.player.z)
         .map(npc=>({...npc,npc:true})),
@@ -995,6 +997,45 @@ export class MapRenderer {
     ctx.fillRect(-metrics.width / 2 - 4, labelY - 11, metrics.width + 8, 14);
     ctx.fillStyle = '#fff';
     ctx.fillText(name, 0, labelY);
+    if (actor.speech) this.drawSpeechBubble(actor.speech, labelY - 16, placement);
+    ctx.restore();
+  }
+
+  // Balão de fala do chat da cidade, em cima do nome do jogador.
+  drawSpeechBubble(text, bottomY, placement) {
+    const ctx = this.ctx;
+    const fontSize = Math.max(10, 12 * placement.scale);
+    ctx.font = `${fontSize}px Tahoma`;
+    const maxWidth = Math.max(120, 170 * placement.scale);
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const next = line ? `${line} ${word}` : word;
+      if (ctx.measureText(next).width > maxWidth && line) { lines.push(line); line = word; }
+      else line = next;
+      if (lines.length === 3) break;
+    }
+    if (line && lines.length < 3) lines.push(line);
+    const lineHeight = fontSize + 3;
+    const width = Math.min(maxWidth, Math.max(...lines.map(l => ctx.measureText(l).width))) + 12;
+    const height = lines.length * lineHeight + 8;
+    const top = bottomY - height;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,250,232,.94)';
+    ctx.strokeStyle = 'rgba(40,30,10,.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-width / 2, top, width, height, 6);
+    else ctx.rect(-width / 2, top, width, height);
+    ctx.moveTo(-5, top + height);
+    ctx.lineTo(0, top + height + 6);
+    ctx.lineTo(5, top + height);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#2a1d05';
+    ctx.textAlign = 'center';
+    lines.forEach((l, i) => ctx.fillText(l, 0, top + 4 + fontSize + i * lineHeight - 2, maxWidth));
     ctx.restore();
   }
 

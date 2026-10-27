@@ -25,9 +25,9 @@ import {
   restoreContainerTree,
   usedSlots
 } from '../core/inventory/containers.js?v=22.4.4';
-import { SocketClient } from '../core/network/socket-client-offline.js?v=22.4.4';
+import { SocketClient } from '../core/network/socket-client-social.js?v=22.5.0';
 import { isRarityEligibleItem, rarityAdjustedItem, rarityDefinition, rollItemRarity } from '../core/items/item-rarity.js';
-import { MapRenderer } from '../core/map/map-renderer.js?v=22.4.4';
+import { MapRenderer } from '../core/map/map-renderer.js?v=22.5.0';
 import { loadWebAssetStatus, loadWebManifest } from '../core/map/web-asset-loader.js';
 import {
   equipmentSlots,
@@ -853,6 +853,7 @@ export function createApp(root, options = {}) {
       updateOnline();
     },
     onChat(message) {
+      if(message?.id&&state.chat.some(entry=>String(entry.id)===String(message.id)))return;
       state.chat.push({...message,system:false,channel:'default'});
       state.chat = state.chat.slice(-120);
       persistChatHistory();
@@ -998,6 +999,11 @@ export function createApp(root, options = {}) {
       activeView='pvp';
       if(pvpMessage)log(`PvP: ${pvpMessage}`);
       render();
+    },
+    onSocialStatus(status) {
+      // Multiplayer da cidade: só muda o indicador, nunca a hunt/training.
+      networkStatus = status;
+      updateOnline();
     },
     onStatus(status) {
       const previous=networkStatus;
@@ -1511,15 +1517,22 @@ export function createApp(root, options = {}) {
 
   {
     const onlineChar = characters[state.profile.characterId];
+    // Só o que os outros jogadores precisam ver: o profile completo (mail,
+    // amigos, banco...) não sai do navegador.
     socket.connect({
-      ...state.profile,
+      id:state.profile.id,
+      name:state.profile.name,
+      level:Number(state.profile.level || 1),
+      characterId:state.profile.characterId,
+      formId:state.profile.formId || '',
       sprite:characterPortrait(onlineChar),
-      outfitId:characterOutfitId(onlineChar)
+      outfitId:characterOutfitId(onlineChar),
+      position:{...state.temple}
     });
   }
 
   function syncMultiplayerAppearance() {
-    if (!socket?.connected) return;
+    if (!socket) return;
     const char = characters[state.profile.characterId];
     socket.sendAppearance({
       characterId:state.profile.characterId,
@@ -1906,7 +1919,29 @@ export function createApp(root, options = {}) {
   }
 
 
+  // Multiplayer da cidade: publica posição, atividade e visual atuais. O
+  // SocketClient só manda o que mudou, então rodar a cada render é barato.
+  function syncSocialPresence() {
+    try {
+      const char = characters[state.profile.characterId];
+      const activity = activeView === 'world' ? 'world' : String(activeView || 'world');
+      socket.syncLocal({
+        position:state.temple,
+        activity,
+        zoneName:activity === 'hunt' ? (zones.find(zone => zone.id === state.hunt.zoneId)?.name || '') : '',
+        appearance:{
+          level:Number(state.profile.level || 1),
+          characterId:state.profile.characterId,
+          formId:state.profile.formId || '',
+          sprite:characterPortrait(char),
+          outfitId:characterOutfitId(char)
+        }
+      });
+    } catch {}
+  }
+
   function render() {
+    syncSocialPresence();
     const preservedWindowScroll = (activeView === 'npcs' || vendorOpen)
       ? {x:window.scrollX,y:window.scrollY}
       : null;
@@ -6680,7 +6715,7 @@ export function createApp(root, options = {}) {
       const input = root.querySelector('#chat-input');
       const text = input.value.trim();
       if (!text) return;
-      if(socket.connected){
+      if(socket.connected || socket.social){
         // Comandos e mensagens passam pelo servidor. O echo oficial evita
         // duplicar a mensagem do proprio player no Default.
         socket.sendChat(text);
@@ -7015,6 +7050,7 @@ export function createApp(root, options = {}) {
           return true;
         } else{
           state.temple={x,y,z,direction};
+          socket.sendPosition(x,y,z,direction);
           if (handleRebornWorldStep(state.temple)) return true;
           if (closeDistanceBoundWorldPanels()) {
             updateCoordinates();
