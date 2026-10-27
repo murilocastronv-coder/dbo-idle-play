@@ -18,7 +18,8 @@
 // =====================================================================
 const DEFAULT_REMOTE = 'wss://dbo-idle-multiplayer-server.onrender.com/ws';
 const STORAGE_KEY = 'dbo-multiplayer-server';
-const STATIC_HOSTS = /(?:^|\.)github\.io$/i;
+// Hosts que só servem arquivos (sem /ws próprio): usam o servidor padrão.
+const STATIC_HOSTS = /(?:^|\.)github\.io$|^dbo-idle-play\.onrender\.com$/i;
 const STEP_MS = 220;
 const SPEECH_MS = 6000;
 const PING_MS = 15000;
