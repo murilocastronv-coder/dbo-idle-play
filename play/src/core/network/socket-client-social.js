@@ -18,8 +18,14 @@
 // =====================================================================
 const DEFAULT_REMOTE = 'wss://dbo-idle-multiplayer-server.onrender.com/ws';
 const STORAGE_KEY = 'dbo-multiplayer-server';
-// Hosts que só servem arquivos (sem /ws próprio): usam o servidor padrão.
-const STATIC_HOSTS = /(?:^|\.)github\.io$|^dbo-idle-play\.onrender\.com$/i;
+// O jogo só fala com o próprio endereço quando foi aberto pelo servidor:
+// o host público dele, localhost ou um IP (PC na Wi-Fi de casa). Qualquer
+// outro domínio (forgotten-lands.world, GitHub Pages, static site...) só
+// serve arquivos e usa o servidor público.
+const SERVER_HOSTS = /^(?:dbo-idle-multiplayer-server\.onrender\.com|localhost|\d{1,3}(?:\.\d{1,3}){3}|\[[\da-f:]+\])$/i;
+function servedByGameServer() {
+  return SERVER_HOSTS.test(location.hostname) || location.hostname.endsWith('.local');
+}
 const STEP_MS = 220;
 const SPEECH_MS = 6000;
 const PING_MS = 15000;
@@ -45,7 +51,7 @@ export function resolveServerUrl() {
   if (saved === 'off') return null;
   if (saved && /^wss?:\/\//i.test(saved)) return saved;
   if (location.protocol === 'file:') return null;
-  if (STATIC_HOSTS.test(location.hostname)) return DEFAULT_REMOTE;
+  if (!servedByGameServer()) return DEFAULT_REMOTE;
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${protocol}//${location.host}/ws`;
 }
@@ -56,7 +62,7 @@ export function resolveApiBase() {
   const saved = readStorage(STORAGE_KEY);
   const fromQuery = new URL(location.href).searchParams.get('server');
   const ws = [fromQuery, saved].find(value => value && /^wss?:\/\//i.test(value));
-  const target = ws || (STATIC_HOSTS.test(location.hostname) ? DEFAULT_REMOTE : null);
+  const target = ws || (servedByGameServer() ? null : DEFAULT_REMOTE);
   if (!target) return '';
   return target.replace(/^ws/i, 'http').replace(/\/ws\/?$/, '');
 }

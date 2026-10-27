@@ -1,4 +1,4 @@
-import { createApp } from './app/app.js?v=22.6.0';
+import { createApp } from './app/app.js?v=22.6.1';
 import {
   addCharacterToAccount,
   accountLimits,
@@ -25,7 +25,7 @@ import { characters } from './data/game-content.js?v=22.4.4';
 import { currentTransformationForm } from './core/transformations/transformation-engine.js?v=21.26.4';
 
 const CLIENT_VERSION = '21.26.4';
-const EMBEDDED_CLIENT_BUILD = '22.6.0';
+const EMBEDDED_CLIENT_BUILD = '22.6.1';
 const CLIENT_BUILD = new URL(location.href).searchParams.get('build') || EMBEDDED_CLIENT_BUILD;
 const root = document.querySelector('#app');
 let updateReloadStarted=false;
