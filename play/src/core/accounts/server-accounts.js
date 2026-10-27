@@ -5,7 +5,7 @@
 // funciona com o jogo servido pelo proprio servidor ou por um site estatico
 // (GitHub Pages / Render static) falando com o servidor em outro dominio.
 // =====================================================================
-import { resolveApiBase } from '../network/socket-client-social.js?v=22.6.0';
+import { resolveApiBase } from '../network/socket-client-social.js?v=22.6.1';
 
 const TOKEN_KEY = 'forgotten-lands-session-v1';
 const API_BASE = resolveApiBase();

@@ -347,9 +347,11 @@
 
   <script>
     (function () {
-      // Mesmo servidor que o jogo usa: em sites estáticos, o servidor público.
-      var staticHost = /(?:^|\.)github\.io$|^dbo-idle-play\.onrender\.com$/i.test(location.hostname);
-      var API = staticHost ? 'https://dbo-idle-multiplayer-server.onrender.com' : '';
+      // Mesmo servidor que o jogo usa. Aberta por outro domínio
+      // (forgotten-lands.world, static site...), fala com o servidor público.
+      var h = location.hostname;
+      var sameServer = /^(?:dbo-idle-multiplayer-server\.onrender\.com|localhost|\d{1,3}(?:\.\d{1,3}){3})$/i.test(h) || /\.local$/.test(h);
+      var API = sameServer ? '' : 'https://dbo-idle-multiplayer-server.onrender.com';
       var PORTRAITS = './play/assets/generated/wodbo-vocations/portraits/';
       var roster = [
         ['Goku',1489],['Vegeta',1511],['Gohan',1534],['Piccolo',1635],['Trunks',1575],['Freeza',1664],
@@ -369,7 +371,11 @@
           // Ninguém online? Melhor um convite do que um "0" desanimado.
           document.getElementById('st-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) : 'Seja o 1º';
           document.getElementById('hero-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) + ' jogando agora' : 'Servidor online';
-        }).catch(function () { document.getElementById('hero-online').textContent = 'Servidor acordando...'; });
+        }).catch(function () {
+          // O plano grátis hiberna: o primeiro pedido acorda o servidor. Tenta
+          // de novo logo em vez de mostrar erro.
+          setTimeout(loadStats, 8000);
+        });
         get('/api/accounts/stats').then(function (d) {
           document.getElementById('st-accounts').textContent = fmt(d.accounts);
         }).catch(function () {});
@@ -381,7 +387,7 @@
           box.innerHTML = rows.length ? rows.map(function (p, i) {
             return '<div class="rank-row"><span class="pos">#' + (i + 1) + '</span><span><b>' + esc(p.name) + '</b></span><span class="lvl">Lv ' + fmt(p.level) + '</span></div>';
           }).join('') : '<div class="rank-empty">Ninguém no ranking ainda. Seja o primeiro!</div>';
-        }).catch(function () { box.innerHTML = '<div class="rank-empty">O servidor está acordando. Recarregue em alguns segundos.</div>'; });
+        }).catch(function () { setTimeout(loadRanking, 8000); });
       }
       loadStats(); loadRanking();
       setInterval(loadStats, 30000);

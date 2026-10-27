@@ -25,7 +25,7 @@ import {
   restoreContainerTree,
   usedSlots
 } from '../core/inventory/containers.js?v=22.4.4';
-import { SocketClient } from '../core/network/socket-client-social.js?v=22.6.0';
+import { SocketClient } from '../core/network/socket-client-social.js?v=22.6.1';
 import { isRarityEligibleItem, rarityAdjustedItem, rarityDefinition, rollItemRarity } from '../core/items/item-rarity.js';
 import { MapRenderer } from '../core/map/map-renderer.js?v=22.5.0';
 import { loadWebAssetStatus, loadWebManifest } from '../core/map/web-asset-loader.js';
