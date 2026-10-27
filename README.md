@@ -1,6 +1,6 @@
 # DBO IDLE — versão jogável
 
-Versão estática do DBO IDLE, um RPG idle de navegador inspirado em Dragon Ball Online. Roda inteira no cliente, sem backend.
+Versão estática do DBO IDLE, um RPG idle de navegador inspirado em Dragon Ball Online. O jogo roda no cliente; um servidor leve opcional (`multiplayer-server/`) deixa várias pessoas juntas na mesma cidade.
 
 **[▶ Jogar](https://alanfmf.github.io/dbo-idle-play/play/)** · [Wiki](https://alanfmf.github.io/dbo-idle-play/wiki/) · [Estudo de caso técnico](https://github.com/AlanFMF/dbo-idle-showcase)
 
@@ -18,6 +18,32 @@ O que muda sem backend:
 | Market, guilda, party, PvP, rankings, loja VIP, pagamentos | Indisponíveis — dependiam do servidor autoritativo |
 
 Como o progresso vive no navegador, limpar os dados do site apaga a conta, e não há sincronização entre dispositivos.
+
+## Multiplayer (cidade compartilhada)
+
+O progresso continua no navegador, mas a **cidade de Earth é compartilhada**: quem
+estiver conectado ao mesmo servidor aparece no mapa, anda em tempo real, fala no
+chat (com balão em cima do personagem) e entra na contagem de jogadores online.
+Quem está em hunt/treino some da cidade e volta quando retorna ao PZ.
+
+### Jogar com dois celulares (mesma Wi-Fi)
+
+```bash
+npm install
+npm start
+```
+
+O servidor mostra no terminal o endereço para abrir no celular, algo como
+`http://192.168.0.10:10000/play/`. Abra esse link nos dois telefones, crie um
+personagem em cada um e vocês vão se ver na cidade. Comando no chat: `/online`.
+
+### Servidor na internet (Render, Railway, VPS...)
+
+`npm start` sobe tudo: o jogo e o WebSocket em `/ws`. O `render.yaml` já deixa
+pronto para o Render. Quem abrir o jogo pelo GitHub Pages conecta no servidor
+padrão; para apontar para outro, abra o jogo uma vez com
+`?server=wss://seu-servidor/ws` (fica salvo; `?server=auto` volta ao padrão e
+`?server=off` desliga o multiplayer).
 
 ## Estrutura
 
