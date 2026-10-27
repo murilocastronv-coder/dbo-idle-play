@@ -8,7 +8,7 @@
 //
 // O idioma fica em localStorage ('fl-lang') e é o mesmo da página inicial.
 // =====================================================================
-import { EN, PATTERNS_EN, AREAS_EN } from './dictionary-en.js?v=22.7.0';
+import { EN, PATTERNS_EN, AREAS_EN } from './dictionary-en.js?v=22.8.0';
 
 const STORAGE_KEY = 'fl-lang';
 const ATTRS = ['placeholder', 'title', 'aria-label', 'alt'];

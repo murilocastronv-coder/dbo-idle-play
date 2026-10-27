@@ -133,6 +133,8 @@ export class SocketClient {
     this.reconnectAttempt = 0;
     this.manualClose = false;
     this.online = 0;
+    this.providers = {};
+    this.trade = null;
   }
 
   connect(profile = {}) {
@@ -167,6 +169,8 @@ export class SocketClient {
     ws.addEventListener('open', () => {
       if (this.ws !== ws) return;
       this.social = true;
+      // Conexão nova: tudo que já tinha sido enviado precisa ir de novo.
+      this.last = { position: '', activity: '', appearance: '', card: '' };
       this.reconnectAttempt = 0;
       this.raw({
         type: 'join',
@@ -235,6 +239,45 @@ export class SocketClient {
         break;
       case 'pong':
         this.online = Number(msg.online || this.online);
+        break;
+      case 'character-profile':
+        this.handlers.onCharacterProfile?.(msg);
+        break;
+      case 'trade-invite':
+        this.handlers.onTradeInvite?.(msg);
+        break;
+      case 'trade-state':
+        // O servidor não conhece o inventário: cada lado completa com o seu.
+        this.trade = msg.trade || null;
+        this.handlers.onTradeState?.(this.trade ? { ...this.trade, ownInventory: this.providers.tradeInventory?.() || [] } : null);
+        break;
+      case 'trade-event':
+        if (['cancelled', 'declined', 'expired', 'completed'].includes(msg.event)) this.trade = null;
+        this.handlers.onTradeEvent?.(msg);
+        break;
+      case 'trade-verify': {
+        const check = this.providers.tradeCheck?.(msg.give, msg.receive) || { ok: false, message: 'Trade indisponível.' };
+        this.raw({ type: 'trade-action', action: 'verified', payload: { tradeId: msg.tradeId, ok: Boolean(check.ok), message: check.message || '' } });
+        break;
+      }
+      case 'trade-complete': {
+        this.trade = null;
+        const result = this.providers.tradeApply?.(msg.give, msg.receive) || {};
+        this.handlers.onTradeEvent?.({ event: 'completed', message: result.message || `Trade com ${msg.partnerName} concluído.` });
+        break;
+      }
+      case 'pvp-invite':
+        this.handlers.onPvpInvite?.(msg);
+        break;
+      case 'pvp-state':
+        this.handlers.onPvpState?.(msg.duel || null, msg.serverTime || Date.now());
+        break;
+      case 'pvp-event':
+        this.handlers.onPvpEvent?.(msg);
+        break;
+      case 'pvp-result':
+        this.providers.pvpApplyResult?.(msg);
+        this.handlers.onPvpResult?.(msg);
         break;
       default:
         break;
@@ -317,6 +360,47 @@ export class SocketClient {
     return this.raw({ type: 'chat', text: String(text || '').slice(0, 240) });
   }
 
+  // Funções do app que leem/alteram o personagem (inventário, moedas,
+  // atributos de combate). O servidor só intermedeia; quem aplica é o cliente.
+  setProviders(providers = {}) {
+    this.providers = { ...this.providers, ...providers };
+  }
+
+  // Cartão público do personagem (aba Perfil de quem clicar em você).
+  sendProfileCard(card) {
+    if (!card) return;
+    const signature = JSON.stringify(card);
+    if (signature === this.last.card || !this.social) return;
+    if (this.raw({ type: 'profile-card', profile: card })) this.last.card = signature;
+  }
+
+  requestCharacterProfile(characterId) {
+    if (!this.raw({ type: 'profile-request', characterId })) {
+      this.handlers.onCharacterProfile?.({ ok: false, message: 'Sem conexão com o servidor.' });
+    }
+  }
+
+  sendTradeAction(action, payload = {}) {
+    let body = payload;
+    if (action === 'offer') {
+      // A interface manda só {key, quantity}; o servidor precisa saber o item.
+      const inventory = new Map((this.providers.tradeInventory?.() || []).map(row => [String(row.key), row]));
+      const items = (payload.offer?.items || []).map(row => {
+        const source = inventory.get(String(row.key));
+        return source ? { key: source.key, itemId: source.itemId, rarity: source.rarity, instanceId: source.instanceId || null, quantity: Math.min(Number(row.quantity || 1), Number(source.quantity || 1)) } : null;
+      }).filter(Boolean);
+      body = { offer: { ...payload.offer, items } };
+    }
+    this.raw({ type: 'trade-action', action, payload: body });
+  }
+
+  sendPvpAction(action, payload = {}) {
+    const body = (action === 'challenge' || action === 'accept')
+      ? { ...payload, sheet: this.providers.pvpSheet?.() || {} }
+      : payload;
+    this.raw({ type: 'pvp-action', action, payload: body });
+  }
+
   disconnect() {
     this.manualClose = true;
     clearTimeout(this.reconnectTimer);
@@ -334,11 +418,8 @@ export class SocketClient {
   pickupGround() {}
   sendGameAction() {}
   sendPartyAction() {}
-  sendTradeAction() {}
-  sendPvpAction() {}
   sendGuildBossTaunt() {}
   sendClientLayout() {}
   sendClientPreferences() {}
-  requestCharacterProfile() {}
   requestCharacterExit() { return Promise.resolve({ ok: true, offline: true }); }
 }
