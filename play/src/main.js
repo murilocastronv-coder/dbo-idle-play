@@ -1,4 +1,4 @@
-import { createApp } from './app/app.js?v=22.5.0';
+import { createApp } from './app/app.js?v=22.6.0';
 import {
   addCharacterToAccount,
   accountLimits,
@@ -16,7 +16,7 @@ import {
   selectAccountCharacter,
   updateAccountCharacter,
   validateNickname
-} from './core/accounts/local-accounts.js?v=22.4.4';
+} from './core/accounts/server-accounts.js?v=22.5.0';
 import {
   createCharacterState,
   loadLegacyCharacter
@@ -25,7 +25,7 @@ import { characters } from './data/game-content.js?v=22.4.4';
 import { currentTransformationForm } from './core/transformations/transformation-engine.js?v=21.26.4';
 
 const CLIENT_VERSION = '21.26.4';
-const EMBEDDED_CLIENT_BUILD = '22.5.0';
+const EMBEDDED_CLIENT_BUILD = '22.6.0';
 const CLIENT_BUILD = new URL(location.href).searchParams.get('build') || EMBEDDED_CLIENT_BUILD;
 const root = document.querySelector('#app');
 let updateReloadStarted=false;
@@ -122,12 +122,10 @@ function renderAuth() {
       ? (verifying ? 'Verificar e-mail' : 'Criar conta')
       : (resetVerifying ? 'Redefinir senha' : 'Recuperar senha');
   const warning = verifying
-    ? `Versao de demonstracao: nenhum e-mail e enviado. Digite qualquer codigo de 6 digitos (ex.: 000000) para criar a conta <strong>${escapeHtml(pendingRegistrationEmail)}</strong> neste navegador.`
-    : resetVerifying
-      ? `Versao de demonstracao: digite qualquer codigo de 6 digitos (ex.: 000000) e defina a nova senha de <strong>${escapeHtml(pendingPasswordResetEmail)}</strong>.`
-      : resetting
-        ? 'Versao de demonstracao: informe o e-mail de uma conta criada neste navegador para definir uma nova senha.'
-        : '';
+    ? `Digite qualquer codigo de 6 digitos (ex.: 000000) e crie a senha da conta <strong>${escapeHtml(pendingRegistrationEmail)}</strong>. Ela fica salva no servidor: entre de qualquer celular ou PC.`
+    : resetVerifying || resetting
+      ? 'A recuperacao de senha por e-mail ainda nao esta disponivel. Se esqueceu a senha, fale com o administrador do servidor.'
+      : '';
 
   let formHtml='';
   if(authMode==='login'){
@@ -176,7 +174,7 @@ function renderAuth() {
   root.innerHTML = `
     <main class="account-shell">
       <section class="account-panel">
-        <div class="account-logo">DBO IDLE</div>
+        <div class="account-logo">Forgotten Lands</div>
         <h1>${heading}</h1>
         ${warning ? `<p class="mock-warning">${warning}</p>` : ''}
         ${accountMessage ? `<div class="account-message">${escapeHtml(accountMessage)}</div>` : ''}
@@ -250,7 +248,7 @@ function renderAuth() {
       if(!result.ok){accountMessage=result.message;renderAuth();return;}
       pendingRegistrationEmail=result.email;
       registrationStep='code';
-      accountMessage=result.message || 'Versao de demonstracao: digite qualquer codigo de 6 digitos para continuar.';
+      accountMessage=result.message || 'Digite qualquer codigo de 6 digitos para continuar.';
       renderAuth();
       return;
     }
@@ -260,7 +258,7 @@ function renderAuth() {
       if(!result.ok){accountMessage=result.message;renderAuth();return;}
       pendingPasswordResetEmail=result.email;
       passwordResetStep='code';
-      accountMessage=result.message || 'Versao de demonstracao: digite qualquer codigo de 6 digitos e a nova senha.';
+      accountMessage=result.message || 'Digite o codigo e a nova senha.';
       renderAuth();
       return;
     }
@@ -286,7 +284,7 @@ function renderAuth() {
     registrationStep='email';
     pendingRegistrationEmail='';
     if (result.migration?.migrated) {
-      accountMessage = `${result.migration.migrated} personagem(ns) do save local foram importados para o PostgreSQL.`;
+      accountMessage = `${result.migration.migrated} personagem(ns) salvos neste navegador foram enviados para a sua conta online.`;
     } else {
       accountMessage = '';
     }
@@ -547,16 +545,14 @@ function launchCharacter(state) {
       void finishSwitch();
     }
   });
-  window.addEventListener(
-    'pagehide',
-    () => {
-      // V21.25.7: o fechamento da pagina nao envia um snapshot local atrasado.
-      // O WebSocket autoritativo entra em farming de protecao e continua sendo
-      // a unica fonte de progresso durante a queda/fechamento.
-      discardCharacterSave(characterId);
-    },
-    {once:true}
-  );
+  // O progresso vai para o banco a cada ~1s; ao fechar ou minimizar (celular),
+  // o save pendente sai na hora para nao perder nada.
+  const flushOnHide=()=>{if(document.visibilityState==='hidden')flushCharacterSaveOnUnload(characterId);};
+  document.addEventListener('visibilitychange',flushOnHide);
+  window.addEventListener('pagehide',()=>{
+    document.removeEventListener('visibilitychange',flushOnHide);
+    flushCharacterSaveOnUnload(characterId);
+  },{once:true});
 }
 
 async function bootstrap() {
@@ -565,7 +561,7 @@ async function bootstrap() {
     const legacy = loadLegacyCharacter();
     if (legacy) {
       accountMessage =
-        'Um save antigo foi encontrado. Entre ou crie sua conta online para importa-lo.';
+        'Um save antigo foi encontrado. Entre ou crie sua conta online com o mesmo e-mail para importa-lo.';
     }
     renderAuth();
     return;

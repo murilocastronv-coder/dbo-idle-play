@@ -2,7 +2,7 @@
 
 ## Natureza do projeto
 
-O DBO IDLE é um projeto independente de fã, sem fins comerciais, criado para fins educacionais e de portfólio. Não possui vínculo, patrocínio, licenciamento ou aprovação oficial das franquias, empresas ou projetos que serviram de inspiração. Nomes, marcas, personagens e universo pertencem aos respectivos titulares.
+O Forgotten Lands é um projeto independente de fã, sem fins comerciais, criado para fins educacionais e de portfólio. Não possui vínculo, patrocínio, licenciamento ou aprovação oficial das franquias, empresas ou projetos que serviram de inspiração. Nomes, marcas, personagens e universo pertencem aos respectivos titulares.
 
 Esta versão não processa pagamentos, não vende nada e não coleta dados: roda inteira no navegador de quem joga.
 

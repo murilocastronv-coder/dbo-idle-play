@@ -2,7 +2,7 @@
   "name": "dbo-idle-multiplayer-server",
   "version": "1.0.0",
   "private": true,
-  "description": "WebSocket multiplayer server for DBO Idle",
+  "description": "WebSocket multiplayer server for Forgotten Lands",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "express": "^4.21.2",
+    "pg": "^8.23.1",
     "ws": "^8.18.0"
   }
 }

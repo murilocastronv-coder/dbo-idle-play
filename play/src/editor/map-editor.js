@@ -327,7 +327,7 @@ function render(){
   const bounds=map.worldBounds;
   root.innerHTML=`<header>
     <div>
-      <h1>DBO Idle — Editor do Mapa Original</h1>
+      <h1>Forgotten Lands — Editor do Mapa Original</h1>
       <p>Abra o templo original, edite pisos, objetos, NPCs e spawns.</p>
     </div>
     <div class="header-actions">

@@ -1,5 +1,5 @@
 // =====================================================================
-// DBO IDLE - camada de contas da build estatica (sem servidor).
+// Forgotten Lands - camada de contas da build estatica (sem servidor).
 //
 // Exporta exatamente a mesma interface de server-accounts.js, porem
 // persistindo tudo em localStorage atraves de mock-accounts.js.
