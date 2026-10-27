@@ -22,10 +22,11 @@ import {
   loadLegacyCharacter
 } from './core/storage.js?v=22.4.4';
 import { characters } from './data/game-content.js?v=22.4.4';
+import { startI18n } from './core/i18n/i18n.js?v=22.7.0';
 import { currentTransformationForm } from './core/transformations/transformation-engine.js?v=21.26.4';
 
 const CLIENT_VERSION = '21.26.4';
-const EMBEDDED_CLIENT_BUILD = '22.6.1';
+const EMBEDDED_CLIENT_BUILD = '22.7.0';
 const CLIENT_BUILD = new URL(location.href).searchParams.get('build') || EMBEDDED_CLIENT_BUILD;
 const root = document.querySelector('#app');
 let updateReloadStarted=false;
@@ -569,4 +570,5 @@ async function bootstrap() {
   renderCharacters();
 }
 
+startI18n();
 bootstrap();
