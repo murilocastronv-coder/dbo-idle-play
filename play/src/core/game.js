@@ -5,7 +5,7 @@ const SAVE_KEY='dbo-idle-save-v1';
 const xpNeeded=l=>Math.floor(60*Math.pow(l,1.55));
 export class Game {
  constructor(){this.listeners=[];this.state=this.load()||this.fresh();this.lastTick=Date.now();this.applyOffline();}
- fresh(){return {version:1,characterId:null,level:1,xp:0,zeni:0,zoneId:'earth-plains',enemy:null,hp:100,maxHp:100,inventory:{},equipment:{weapon:null,armor:null,accessory:null},stats:{kills:0,playSeconds:0},log:['Bem-vindo ao DBO Idle.']};}
+ fresh(){return {version:1,characterId:null,level:1,xp:0,zeni:0,zoneId:'earth-plains',enemy:null,hp:100,maxHp:100,inventory:{},equipment:{weapon:null,armor:null,accessory:null},stats:{kills:0,playSeconds:0},log:['Bem-vindo ao Forgotten Lands.']};}
  get character(){return characters.find(x=>x.id===this.state.characterId)} get zone(){return zones.find(x=>x.id===this.state.zoneId)}
  transformation(){return [...this.character.transformations].reverse().find(t=>this.state.level>=t.level)}
  derived(){if(!this.character)return null; const t=this.transformation();let atk=this.character.base.attack*t.multiplier,def=this.character.base.defense*t.multiplier,hp=this.character.base.hp*t.multiplier;for(const id of Object.values(this.state.equipment)){const i=items.find(x=>x.id===id);if(i){atk+=i.attack||0;def+=i.defense||0;}}return {attack:Math.floor(atk),defense:Math.floor(def),maxHp:Math.floor(hp),speed:this.character.base.speed,form:t.name};}

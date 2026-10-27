@@ -3,198 +3,406 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#06101d">
+  <meta name="theme-color" content="#070b14">
   <meta name="color-scheme" content="dark">
-  <title>DBO IDLE - MMORPG Idle de Dragon Ball Online</title>
-  <meta name="description" content="Jogue DBO IDLE, um MMORPG idle inspirado em Dragon Ball Online com hunts, bosses, guilds, market, bestiário, progressão de personagem e multiplayer online.">
-  <link rel="canonical" href="https://alanfmf.github.io/">
-  <link rel="icon" href="/landing-assets/favicon.svg" type="image/svg+xml">
+  <title>Forgotten Lands — RPG Idle Multiplayer no navegador</title>
+  <meta name="description" content="Forgotten Lands é um RPG idle multiplayer grátis: crie sua conta, escolha entre dezenas de guerreiros, cace em mais de 200 áreas, transforme-se e encontre outros jogadores na cidade. Joga no celular e no PC.">
+  <link rel="canonical" href="https://dbo-idle-multiplayer-server.onrender.com/">
+  <link rel="icon" href="./landing-assets/favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
-  <meta property="og:site_name" content="DBO IDLE">
-  <meta property="og:title" content="DBO IDLE - MMORPG Idle de Dragon Ball Online">
-  <meta property="og:description" content="Evolua seu personagem, enfrente bosses, participe de guilds, negocie no market e jogue online com outros players.">
-  <meta property="og:url" content="https://alanfmf.github.io/">
-  <meta property="og:image" content="https://alanfmf.github.io/landing-assets/hero-dbo-idle.webp">
+  <meta property="og:site_name" content="Forgotten Lands">
+  <meta property="og:title" content="Forgotten Lands — RPG Idle Multiplayer">
+  <meta property="og:description" content="Cace, evolua e encontre outros jogadores na mesma cidade. Grátis, no navegador, no celular ou no PC.">
+  <meta property="og:image" content="https://dbo-idle-multiplayer-server.onrender.com/landing-assets/screens/city.webp">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="DBO IDLE - MMORPG Idle de Dragon Ball Online">
-  <meta name="twitter:description" content="Hunts, bosses, guilds, market, bestiário, transformações e multiplayer online.">
-  <meta name="twitter:image" content="https://alanfmf.github.io/landing-assets/hero-dbo-idle.webp">
-  <link rel="stylesheet" href="/landing-assets/landing.css?v=1.0.2">
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"VideoGame",
-    "name":"DBO IDLE",
-    "url":"https://alanfmf.github.io/",
-    "description":"MMORPG idle inspirado em Dragon Ball Online com hunts, bosses, guilds, market, bestiário, progressão e multiplayer online.",
-    "genre":["MMORPG","Idle RPG"],
-    "gamePlatform":"Web browser",
-    "inLanguage":"pt-BR"
-  }
-  </script>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    .dbo-live-stats{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
-    .dbo-live-stats>div{min-width:145px;padding:14px 18px;border:1px solid #6bbaff55;border-radius:14px;background:#071421d9;backdrop-filter:blur(10px)}
-    .dbo-live-stats strong{display:block;font-size:28px;line-height:1.1;color:#70d7ff;font-weight:900}
-    .dbo-live-stats span{display:block;margin-top:5px;font-size:12px;color:#d0deed}
-    .button-primary{cursor:pointer}
+    :root{
+      --bg:#070b14; --bg2:#0c1322; --panel:#111a2c; --panel2:#16213a; --line:#25324d;
+      --text:#eef2fb; --muted:#9fb0cc; --gold:#f5c35b; --gold2:#ffdf8e; --ember:#ff7a3d;
+      --sky:#5fc8ff; --green:#5be39a; --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:hidden}
+    img{max-width:100%;display:block}
+    a{color:inherit}
+    code{background:#ffffff12;padding:1px 6px;border-radius:6px;font-size:.92em}
+    .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
+    .pixel{image-rendering:pixelated;image-rendering:crisp-edges}
+
+    /* ---------- topbar ---------- */
+    .top{position:sticky;top:0;z-index:50;background:rgba(7,11,20,.78);backdrop-filter:blur(14px);border-bottom:1px solid #ffffff10}
+    .top .wrap{display:flex;align-items:center;gap:18px;height:66px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 20px Cinzel,serif;letter-spacing:.5px}
+    .brand .sigil{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ffe7a3,#e59a2c 55%,#8a4a10);box-shadow:0 0 18px #f5c35b88;color:#5a2a00;font-size:18px}
+    .nav{display:flex;gap:22px;margin-left:auto}
+    .nav a{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px}
+    .nav a:hover{color:var(--text)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:800;border-radius:12px;padding:12px 22px;border:1px solid transparent;transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-gold{background:linear-gradient(180deg,var(--gold2),var(--gold) 45%,#d98c1f);color:#2b1500;box-shadow:0 8px 30px #f5c35b44, inset 0 1px 0 #fff8}
+    .btn-gold:hover{box-shadow:0 12px 40px #f5c35b77, inset 0 1px 0 #fff8}
+    .btn-ghost{border-color:#ffffff26;background:#ffffff08;color:var(--text)}
+    .btn-sm{padding:9px 16px;font-size:14px}
+
+    /* ---------- hero ---------- */
+    .hero{position:relative;overflow:hidden;padding:72px 0 90px;isolation:isolate}
+    .hero::before{content:"";position:absolute;inset:0;z-index:-2;
+      background:
+        radial-gradient(900px 500px at 78% 30%,#ff7a3d2e,transparent 60%),
+        radial-gradient(700px 500px at 10% 10%,#5fc8ff22,transparent 60%),
+        linear-gradient(180deg,#0b1428,#070b14 85%)}
+    .hero::after{content:"";position:absolute;inset:0;z-index:-1;opacity:.35;
+      background-image:radial-gradient(#ffffff 1px,transparent 1px);background-size:3px 3px;
+      -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%)}
+    .embers{position:absolute;inset:0;z-index:-1;pointer-events:none}
+    .embers span{position:absolute;bottom:-10px;width:4px;height:4px;border-radius:50%;background:var(--gold2);box-shadow:0 0 10px var(--ember);animation:rise linear infinite;opacity:0}
+    @keyframes rise{0%{transform:translateY(0) scale(1);opacity:0}10%{opacity:.9}100%{transform:translateY(-110vh) scale(.4);opacity:0}}
+    .hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:48px;align-items:center}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:#5be39a14;border:1px solid #5be39a44;color:var(--green);font-weight:700;font-size:13px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 #5be39a88}70%{box-shadow:0 0 0 10px #5be39a00}100%{box-shadow:0 0 0 0 #5be39a00}}
+    h1{font:900 clamp(44px,7vw,84px)/.98 Cinzel,serif;margin:18px 0 18px;letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff6d8 0%,var(--gold2) 35%,var(--gold) 60%,#c96d14 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 6px 30px #f5c35b44)}
+    .lead{font-size:clamp(17px,2vw,20px);color:#c9d5ea;max-width:560px;margin:0 0 28px}
+    .cta{display:flex;gap:12px;flex-wrap:wrap}
+    .stats{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+    .stat{flex:1 1 130px;padding:14px 16px;border-radius:14px;background:#ffffff07;border:1px solid #ffffff14}
+    .stat b{display:block;font:800 26px/1.1 Inter;color:var(--gold2)}
+    .stat span{font-size:13px;color:var(--muted)}
+    .showcase{position:relative;padding-bottom:40px}
+    .screen{border-radius:16px;overflow:hidden;border:1px solid #ffffff1f;box-shadow:0 30px 80px #000a,0 0 0 6px #ffffff06;transform:perspective(1400px) rotateY(-9deg) rotateX(3deg);transition:transform .5s}
+    .screen:hover{transform:perspective(1400px) rotateY(-3deg) rotateX(1deg)}
+    .phone{position:absolute;right:-8px;bottom:-6px;width:31%;min-width:120px;border-radius:26px;padding:7px;background:#05070d;border:1px solid #ffffff2a;box-shadow:0 25px 60px #000c;animation:float 6s ease-in-out infinite}
+    .phone img{border-radius:20px}
+    @keyframes float{50%{transform:translateY(-12px)}}
+    .bubble{position:absolute;left:-14px;top:18%;padding:10px 14px;border-radius:14px;background:#fff8e6;color:#2a1d05;font-weight:700;font-size:14px;box-shadow:0 12px 30px #0008;animation:float 5s ease-in-out infinite .6s}
+    .bubble::after{content:"";position:absolute;left:24px;bottom:-8px;border:8px solid transparent;border-top-color:#fff8e6;border-bottom:0}
+
+    /* ---------- sections ---------- */
+    section{padding:90px 0}
+    .kicker{color:var(--gold);font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase}
+    h2{font:800 clamp(30px,4vw,46px)/1.1 Cinzel,serif;margin:10px 0 14px}
+    .sub{color:var(--muted);max-width:640px;margin:0}
+    .center{text-align:center}.center .sub{margin-inline:auto}
+
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:46px;counter-reset:step}
+    .step{position:relative;padding:26px 22px;border-radius:var(--radius);background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line)}
+    .step::before{counter-increment:step;content:counter(step);position:absolute;top:-16px;left:22px;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:900;color:#2b1500;background:linear-gradient(180deg,var(--gold2),var(--gold))}
+    .step .ico{font-size:30px;margin:8px 0 6px}
+    .step h3{margin:0 0 6px;font-size:18px}
+    .step p{margin:0;color:var(--muted);font-size:15px}
+
+    .feature{display:grid;grid-template-columns:1fr 1.15fr;gap:54px;align-items:center;margin-top:70px}
+    .feature.flip{grid-template-columns:1.15fr 1fr}
+    .feature.flip .copy{order:2}
+    .feature h3{font:800 clamp(24px,3vw,32px)/1.15 Cinzel,serif;margin:8px 0 12px}
+    .feature p{color:var(--muted);margin:0 0 16px}
+    .ticks{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+    .ticks li{display:flex;gap:10px;align-items:flex-start}
+    .ticks li::before{content:"✦";color:var(--gold);flex:none}
+    .shot{border-radius:16px;overflow:hidden;border:1px solid #ffffff1c;box-shadow:0 24px 60px #000a}
+
+    .bg-alt{background:linear-gradient(180deg,var(--bg2),var(--bg))}
+    .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:14px;margin-top:40px}
+    .hero-card{padding:16px 10px 14px;border-radius:16px;text-align:center;background:radial-gradient(circle at 50% 20%,#ffffff12,transparent 60%),var(--panel);border:1px solid var(--line);transition:transform .2s,border-color .2s}
+    .hero-card:hover{transform:translateY(-4px);border-color:#f5c35b88}
+    .hero-card img{width:72px;height:72px;margin:0 auto 8px}
+    .hero-card b{font-size:14px}
+
+    .rank{max-width:720px;margin:36px auto 0;border-radius:var(--radius);border:1px solid var(--line);background:var(--panel);overflow:hidden}
+    .rank-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid #ffffff0c}
+    .rank-row:first-child{border-top:0}
+    .rank-row .pos{font-weight:900;color:var(--muted)}
+    .rank-row:nth-child(1) .pos{color:var(--gold2)}.rank-row:nth-child(2) .pos{color:#d6e2f2}.rank-row:nth-child(3) .pos{color:#e0a36a}
+    .rank-row .lvl{font-weight:800;color:var(--gold2)}
+    .rank-empty{padding:26px;color:var(--muted);text-align:center}
+
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+    .card{padding:24px;border-radius:var(--radius);background:var(--panel);border:1px solid var(--line)}
+    .card h3{margin:6px 0 8px;font-size:18px}
+    .card p{margin:0;color:var(--muted);font-size:15px}
+    .card .ico{font-size:28px}
+
+    .faq{max-width:820px;margin:40px auto 0;display:grid;gap:12px}
+    details{border-radius:14px;background:var(--panel);border:1px solid var(--line);padding:4px 20px}
+    summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"+";color:var(--gold);font-size:22px;line-height:1}
+    details[open] summary::after{content:"–"}
+    details p{margin:0 0 16px;color:var(--muted)}
+
+    .final{position:relative;text-align:center;padding:100px 0;overflow:hidden;
+      background:radial-gradient(700px 300px at 50% 100%,#ff7a3d33,transparent 70%),linear-gradient(180deg,var(--bg),#0d1424)}
+    .final h2{font-size:clamp(32px,5vw,56px)}
+    footer{border-top:1px solid #ffffff10;padding:30px 0;color:var(--muted);font-size:13px}
+    footer .wrap{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+    .reveal.in{opacity:1;transform:none}
+
+    @media (max-width:960px){
+      .hero-grid,.feature,.feature.flip{grid-template-columns:1fr}
+      .feature.flip .copy{order:0}
+      .feature{gap:28px}
+      .steps{grid-template-columns:repeat(2,1fr);row-gap:30px}
+      .grid3{grid-template-columns:1fr}
+      .nav{display:none}
+      .top .btn{margin-left:auto}
+      .screen{transform:none}
+      .hero{padding-top:44px}
+    }
+    @media (max-width:560px){
+      .steps{grid-template-columns:1fr}
+      .bubble{display:none}
+      section{padding:64px 0}
+      .cta .btn{flex:1 1 100%}
+      .brand{font-size:17px}
+      .screen{display:none}
+      .showcase{padding-bottom:0}
+      .phone{position:relative;right:auto;bottom:auto;width:72%;margin:0 auto}
+    }
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-
-  <header class="topbar" id="topo">
-    <div class="nav-shell">
-      <a class="brand" href="#topo" aria-label="DBO IDLE - início">
-        <span class="brand-dbo">DBO</span><span class="brand-idle">IDLE</span>
-      </a>
-
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menu">
-        <span></span><span></span><span></span>
-      </button>
-
-      <nav class="nav-links" id="main-nav" aria-label="Navegação principal">
-        <a class="active" href="#inicio">Início</a>
-        <a href="#wiki">Wiki</a>
-        <a href="#vocacoes">Vocações</a>
-        <a href="#sistemas">Sistemas</a>
-        <a href="#wiki">Bosses & Drops</a>
-        <a class="nav-login" href="/play/">Entrar</a>
-        <a class="button button-small button-primary" href="/play/">Jogar agora</a>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#topo"><span class="sigil">✦</span>Forgotten Lands</a>
+      <nav class="nav">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#recursos">Recursos</a>
+        <a href="#guerreiros">Guerreiros</a>
+        <a href="#ranking">Ranking</a>
+        <a href="#faq">FAQ</a>
       </nav>
+      <a class="btn btn-gold btn-sm" href="./play/">Jogar agora</a>
     </div>
   </header>
 
-  <main id="conteudo">
-    <section class="hero" id="inicio" aria-labelledby="hero-title">
-      <div class="hero-image" role="img" aria-label="Arte promocional do DBO IDLE com guerreiros, auras e cenário inspirado em Dragon Ball"></div>
-      <div class="hero-shade"></div>
-      <div class="hero-glow hero-glow-a"></div>
-      <div class="hero-glow hero-glow-b"></div>
-
-      <div class="hero-content page-shell">
-        <div class="hero-copy reveal">
-          <span class="eyebrow"><span class="status-dot" id="server-dot"></span><span id="server-status">Verificando servidor...</span></span>
-          <h1 id="hero-title"><span>DBO</span> <strong>IDLE</strong></h1>
-          <p class="hero-kicker">MMORPG Idle inspirado no universo <b>Dragon Ball Online</b></p>
-          <p class="hero-text">Evolua seu personagem, enfrente bosses, participe de guilds, conquiste equipamentos, negocie no market e jogue online com outros players.</p>
-          <div class="hero-actions">
-            <a class="button button-primary button-large" href="/play/">
-              <span aria-hidden="true">⚡</span> Jogar agora
-            </a>
-            <a class="button button-secondary button-large" href="#wiki">
-              <span aria-hidden="true">▣</span> Conhecer a Wiki
-            </a>
+  <main id="topo">
+    <section class="hero">
+      <div class="embers" aria-hidden="true"></div>
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow"><span class="dot"></span><span id="hero-online">Servidor online</span></span>
+          <h1>Forgotten Lands</h1>
+          <p class="lead">O RPG idle multiplayer que roda direto no navegador. Escolha seu guerreiro, cace monstros enquanto faz outra coisa, fique mais forte a cada transformação e encontre outros jogadores andando pela mesma cidade.</p>
+          <div class="cta">
+            <a class="btn btn-gold" href="./play/">⚔ Jogar grátis</a>
+            <a class="btn btn-ghost" href="#como-funciona">Ver como funciona</a>
           </div>
-          <div class="hero-pills" aria-label="Destaques do jogo">
-            <span>Multiplayer online</span><span>Progressão idle</span><span>Conteúdo persistente</span>
+          <div class="stats">
+            <div class="stat"><b id="st-online">—</b><span>jogando agora</span></div>
+            <div class="stat"><b id="st-accounts">—</b><span>contas criadas</span></div>
+            <div class="stat"><b>230+</b><span>áreas de caça</span></div>
           </div>
-          <div class="dbo-live-stats" aria-label="Estatísticas do jogo">
-            <div><strong id="dbo-online-count">—</strong><span>Jogadores online</span></div>
-            <div><strong id="dbo-account-count">—</strong><span>Contas criadas</span></div>
-          </div>
+        </div>
+        <div class="showcase">
+          <div class="screen"><img src="./landing-assets/screens/city.webp" alt="Cidade de Forgotten Lands com três jogadores conversando" width="1280" height="800"></div>
+          <div class="phone"><img src="./landing-assets/screens/city-mobile.webp" alt="O jogo rodando no celular" width="540" height="850"></div>
+          <div class="bubble">Bora caçar juntos? ⚔</div>
         </div>
       </div>
     </section>
 
-    <section class="systems-section section" id="sistemas" aria-labelledby="systems-title">
-      <div class="page-shell">
-        <div class="section-heading reveal">
-          <span class="section-kicker">Um mundo sempre evoluindo</span>
-          <h2 id="systems-title">Tudo que você precisa em um MMORPG Idle</h2>
-          <p>Entre, evolua no seu ritmo e escolha em quais sistemas quer focar.</p>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card reveal"><div class="feature-icon orange"><img src="/play/assets/ui/v2130/boost-loot.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Hunts</h3><p>Explore áreas de caça, enfrente monstros e busque novos loots.</p></article>
-          <article class="feature-card reveal"><div class="feature-icon purple feature-icon-ticket"><img src="/play/assets/items/v2130/boss-ticket-zamasu.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Bosses</h3><p>Desafie chefes, use tickets e dispute recompensas especiais.</p></article>
-          <article class="feature-card reveal"><div class="feature-icon blue"><img src="/play/assets/ui/v2180/guild.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Guilds</h3><p>Monte seu grupo, participe de conteúdo social e avance em conjunto.</p></article>
-          <article class="feature-card reveal"><div class="feature-icon green"><img src="/play/assets/ui/v2130/market.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Market</h3><p>Compre, venda e organize equipamentos, loots e supplies.</p></article>
-          <article class="feature-card reveal"><div class="feature-icon gold"><img src="/play/assets/ui/v2130/bestiary.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Bestiário</h3><p>Conheça criaturas, acompanhe progressos e descubra seus drops.</p></article>
-          <article class="feature-card reveal"><div class="feature-icon cyan"><img src="/play/assets/ui/v2130/party.png" alt="" aria-hidden="true" loading="lazy" decoding="async"></div><h3>Multiplayer</h3><p>Veja outros jogadores em tempo real e compartilhe o mesmo mundo.</p></article>
-        </div>
+    <section id="como-funciona">
+      <div class="wrap center reveal">
+        <span class="kicker">Como funciona</span>
+        <h2>Do cadastro à primeira caçada em 1 minuto</h2>
+        <p class="sub">Nada para baixar. Abra o link no celular ou no PC e comece. Seu progresso fica salvo na sua conta.</p>
+      </div>
+      <div class="wrap steps">
+        <article class="step reveal"><div class="ico">🛡️</div><h3>Crie sua conta</h3><p>Só e-mail e senha. Seus personagens ficam guardados no servidor: entre de qualquer aparelho e continue de onde parou.</p></article>
+        <article class="step reveal"><div class="ico">🔥</div><h3>Escolha seu guerreiro</h3><p>Dezenas de vocações, cada uma com estilo próprio: luta corpo a corpo, ataques à distância ou híbrido.</p></article>
+        <article class="step reveal"><div class="ico">⚔️</div><h3>Cace e evolua</h3><p>Entre numa hunt e o combate acontece sozinho. Configure magias e poções no automático e veja o XP e o loot subirem.</p></article>
+        <article class="step reveal"><div class="ico">🌍</div><h3>Encontre a galera</h3><p>Volte para a cidade e veja outros jogadores andando ao seu lado, converse no chat e combine a próxima caçada.</p></article>
       </div>
     </section>
 
-    <section class="vocations-section section" id="vocacoes" aria-labelledby="vocations-title">
-      <div class="page-shell">
-        <div class="section-heading centered reveal">
-          <span class="section-kicker">Escolha sua jornada</span>
-          <h2 id="vocations-title">Personagens e estilos de progressão</h2>
-          <p>O DBO IDLE usa personagens com atributos, evolução e transformações próprias.</p>
+    <section id="recursos" class="bg-alt">
+      <div class="wrap">
+        <div class="center reveal">
+          <span class="kicker">O que tem no jogo</span>
+          <h2>Um mundo inteiro para conquistar</h2>
+          <p class="sub">Progressão longa, muita coisa para colecionar e uma cidade sempre cheia.</p>
         </div>
 
-        <div class="vocation-grid">
-          <article class="vocation-card vocation-orange reveal">
-            <div class="portrait-wrap"><img src="/landing-assets/goku.webp" alt="Retrato de Goku no DBO IDLE" loading="lazy"></div>
-            <div class="vocation-copy"><span class="vocation-tag">Vocation</span><h3>Goku</h3><p>Progressão focada em força, Ki e transformações clássicas.</p><div class="mini-stats"><span>Base</span><span>Kaioken</span><span>Super Saiyajin</span></div></div>
-          </article>
-
-          <article class="vocation-card vocation-blue reveal">
-            <div class="portrait-wrap"><img src="/landing-assets/vegeta.webp" alt="Retrato de Vegeta no DBO IDLE" loading="lazy"></div>
-            <div class="vocation-copy"><span class="vocation-tag">Vocation</span><h3>Vegeta</h3><p>Combate agressivo com evolução própria e formas de alto poder.</p><div class="mini-stats"><span>Base</span><span>Super Saiyajin</span><span>Majin Vegeta</span></div></div>
-          </article>
-
-          <article class="vocation-card vocation-violet reveal">
-            <div class="portrait-wrap"><img src="/landing-assets/gohan.webp" alt="Retrato de Gohan no DBO IDLE" loading="lazy"></div>
-            <div class="vocation-copy"><span class="vocation-tag">Vocation</span><h3>Gohan</h3><p>Equilíbrio entre resistência, Ki e uma progressão que culmina no Místico.</p><div class="mini-stats"><span>Base</span><span>Super Saiyajin</span><span>Místico</span></div></div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="wiki-section section" id="wiki" aria-labelledby="wiki-title">
-      <div class="page-shell">
-        <div class="wiki-panel reveal">
-          <div class="wiki-content">
-            <span class="section-kicker">Central de conhecimento</span>
-            <h2 id="wiki-title">Wiki completa do DBO IDLE</h2>
-            <p>A Wiki será o manual vivo do servidor, feita para jogadores novos e veteranos.</p>
-            <ul class="wiki-list">
-              <li><span>✓</span> Onde cada item dropa e para que ele serve</li>
-              <li><span>✓</span> Como comprar e vender loots e supplies</li>
-              <li><span>✓</span> Guias de vocações, atributos e progressão</li>
-              <li><span>✓</span> Transformações e níveis necessários</li>
-              <li><span>✓</span> Hunts, bosses, drops, tickets e sistemas</li>
+        <div class="feature reveal">
+          <div class="copy">
+            <span class="kicker">Multiplayer</span>
+            <h3>Uma cidade, todos os jogadores</h3>
+            <p>Quando você entra no PZ, aparece para todo mundo que está online. Cada um com seu personagem, andando em tempo real.</p>
+            <ul class="ticks">
+              <li>Veja os outros andando pela cidade, com nome e roupa</li>
+              <li>Chat da cidade com balão de fala em cima do personagem</li>
+              <li>Comando <code>/online</code> para ver quem está conectado</li>
             </ul>
-            <a class="button button-secondary button-large" href="/wiki/">Explorar Wiki</a>
-            <small class="wiki-note">A estrutura inicial da Wiki acompanha este pacote e poderá ser preenchida gradualmente.</small>
           </div>
-          <div class="wiki-visual" aria-hidden="true">
-            <div class="dragon-orb orb-1">★</div><div class="dragon-orb orb-2">★★</div><div class="dragon-orb orb-3">★★★</div>
-            <div class="wiki-book"><span>DBO</span><b>WIKI</b></div>
-            <div class="wiki-grid-lines"></div>
+          <div class="shot"><img src="./landing-assets/screens/city.webp" alt="Jogadores na cidade" loading="lazy" width="1280" height="800"></div>
+        </div>
+
+        <div class="feature flip reveal">
+          <div class="copy">
+            <span class="kicker">Combate idle</span>
+            <h3>Luta sozinho, você só colhe</h3>
+            <p>Escolha a área, quantos monstros puxar e quais magias usar. O combate roda automático, com cura e buffs no momento certo.</p>
+            <ul class="ticks">
+              <li>Barra de magias com modo automático e alvo mínimo</li>
+              <li>Poções de HP e KI configuráveis por porcentagem</li>
+              <li>Analyser com XP/hora, loot e lucro da caçada</li>
+            </ul>
           </div>
+          <div class="shot"><img src="./landing-assets/screens/hunt.webp" alt="Combate em uma hunt" loading="lazy" width="1280" height="800"></div>
+        </div>
+
+        <div class="feature reveal">
+          <div class="copy">
+            <span class="kicker">Conteúdo</span>
+            <h3>230+ hunts, bosses e quests</h3>
+            <p>Comece nos arredores da cidade e vá avançando para ruínas, florestas e terras cada vez mais perigosas.</p>
+            <ul class="ticks">
+              <li>Bosses com drops raros e bestiário para completar</li>
+              <li>Transformações que mudam visual e atributos</li>
+              <li>Forja, raridades de item, Game Pass e muito mais</li>
+            </ul>
+          </div>
+          <div class="shot"><img src="./landing-assets/screens/hunts.webp" alt="Lista de hunts" loading="lazy" width="1000" height="642"></div>
         </div>
       </div>
     </section>
 
-    <section class="final-cta section" aria-labelledby="cta-title">
-      <div class="page-shell">
-        <div class="cta-panel reveal">
-          <div><span class="section-kicker">Sua jornada começa agora</span><h2 id="cta-title">Entre no DBO IDLE e continue evoluindo mesmo no seu ritmo.</h2></div>
-          <a class="button button-primary button-large" href="/play/">Jogar agora</a>
+    <section id="guerreiros">
+      <div class="wrap">
+        <div class="center reveal">
+          <span class="kicker">Vocações</span>
+          <h2>Escolha quem você vai ser</h2>
+          <p class="sub">Cada guerreiro tem escala própria de dano e uma linha de transformações para desbloquear.</p>
         </div>
+        <div class="roster reveal" id="roster"></div>
+      </div>
+    </section>
+
+    <section class="bg-alt">
+      <div class="wrap">
+        <div class="center reveal">
+          <span class="kicker">Feito para jogar em qualquer lugar</span>
+          <h2>Seu progresso vai com você</h2>
+        </div>
+        <div class="grid3">
+          <article class="card reveal"><div class="ico">☁️</div><h3>Conta salva na nuvem</h3><p>Tudo fica no banco de dados do servidor. Trocou de celular? É só entrar com o mesmo e-mail.</p></article>
+          <article class="card reveal"><div class="ico">📱</div><h3>Celular e PC</h3><p>A interface se adapta à tela. No celular, use "Adicionar à tela inicial" para abrir como um app.</p></article>
+          <article class="card reveal"><div class="ico">🆓</div><h3>Grátis</h3><p>Sem download e sem cadastro chato. Abriu, criou a conta, já está caçando.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="ranking">
+      <div class="wrap">
+        <div class="center reveal">
+          <span class="kicker">Ranking ao vivo</span>
+          <h2>Os mais fortes do servidor</h2>
+          <p class="sub">Atualizado direto do banco de dados. Será que seu nome entra aqui?</p>
+        </div>
+        <div class="rank reveal" id="rank"><div class="rank-empty">Carregando ranking...</div></div>
+      </div>
+    </section>
+
+    <section id="faq" class="bg-alt">
+      <div class="wrap">
+        <div class="center reveal">
+          <span class="kicker">Dúvidas</span>
+          <h2>Perguntas frequentes</h2>
+        </div>
+        <div class="faq">
+          <details><summary>Precisa baixar alguma coisa?</summary><p>Não. Forgotten Lands roda no navegador, no celular ou no computador. É só abrir o link e jogar.</p></details>
+          <details><summary>Meu progresso fica salvo?</summary><p>Sim. Sua conta e seus personagens ficam guardados no banco de dados do servidor, e o jogo salva sozinho enquanto você joga. Dá para entrar de outro aparelho com o mesmo e-mail e senha.</p></details>
+          <details><summary>Como eu jogo com meus amigos?</summary><p>Todo mundo que está conectado aparece na cidade (PZ). Vocês se veem andando, conversam pelo chat e podem combinar caçadas. Digite <code>/online</code> no chat para ver quem está jogando.</p></details>
+          <details><summary>O primeiro acesso demorou. É normal?</summary><p>O servidor dorme quando ninguém está jogando. Na primeira visita depois de um tempo ele pode levar até um minuto para acordar; depois disso fica rápido.</p></details>
+          <details><summary>Esqueci minha senha. E agora?</summary><p>A recuperação por e-mail ainda não está disponível. Fale com o administrador do servidor para recuperar sua conta.</p></details>
+          <details><summary>É pago?</summary><p>Não. O jogo é gratuito e feito por fãs, sem fins comerciais.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="wrap reveal">
+        <h2>As terras esquecidas estão esperando</h2>
+        <p class="sub" style="margin:0 auto 28px">Crie seu personagem agora e seja o primeiro do ranking.</p>
+        <a class="btn btn-gold" href="./play/" style="font-size:18px;padding:16px 34px">⚔ Começar a jogar</a>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="page-shell footer-grid">
-      <div class="footer-brand">
-        <a class="brand footer-logo" href="#topo"><span class="brand-dbo">DBO</span><span class="brand-idle">IDLE</span></a>
-        <p>MMORPG Idle inspirado no universo Dragon Ball Online.</p>
-        <div class="server-mini"><span class="status-dot" id="footer-server-dot"></span><span id="footer-server-status">Servidor online</span></div>
-      </div>
-      <div><h3>Navegação</h3><a href="#inicio">Início</a><a href="#vocacoes">Vocações</a><a href="#wiki">Wiki</a></div>
-      <div><h3>Jogo</h3><a href="/play/">Jogar agora</a><a href="/play/">Entrar</a><a href="#sistemas">Sistemas</a><a href="#wiki">Guias</a></div>
-      <div class="footer-cta"><h3>DBO IDLE</h3><p>Seu progresso continua. Seu próximo desafio também.</p><a class="button button-primary" href="/play/">Jogar agora</a></div>
+  <footer>
+    <div class="wrap">
+      <span>© Forgotten Lands — projeto independente de fã, sem fins comerciais.</span>
+      <span><a href="./play/">Jogar</a> · <a href="./NOTICE.md">Aviso e créditos</a></span>
     </div>
-    <div class="footer-bottom">Versão de demonstração, sem servidor: o progresso fica salvo neste navegador.</div>
   </footer>
 
-  <script src="/landing-assets/landing.js?v=1.0.0" defer></script>
+  <script>
+    (function () {
+      // Mesmo servidor que o jogo usa: em sites estáticos, o servidor público.
+      var staticHost = /(?:^|\.)github\.io$|^dbo-idle-play\.onrender\.com$/i.test(location.hostname);
+      var API = staticHost ? 'https://dbo-idle-multiplayer-server.onrender.com' : '';
+      var PORTRAITS = './play/assets/generated/wodbo-vocations/portraits/';
+      var roster = [
+        ['Goku',1489],['Vegeta',1511],['Gohan',1534],['Piccolo',1635],['Trunks',1575],['Freeza',1664],
+        ['Cell',1906],['Majin Buu',502],['Broly',1598],['C17',15],['C18',339],['Bardock',1606],
+        ['Goten',1557],['Cooler',1673],['Uub',1714],['Kuririn',1642],['Pan',329],['Dende',2015]
+      ];
+      document.getElementById('roster').innerHTML = roster.map(function (r) {
+        return '<div class="hero-card"><img class="pixel" src="' + PORTRAITS + r[1] + '.png" alt="' + r[0] + '" width="72" height="72"><b>' + r[0] + '</b></div>';
+      }).join('');
+
+      function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+      function fmt(n) { return Number(n || 0).toLocaleString('pt-BR'); }
+      function get(path) { return fetch(API + path, {cache: 'no-store'}).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
+
+      function loadStats() {
+        get('/api/stats').then(function (d) {
+          // Ninguém online? Melhor um convite do que um "0" desanimado.
+          document.getElementById('st-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) : 'Seja o 1º';
+          document.getElementById('hero-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) + ' jogando agora' : 'Servidor online';
+        }).catch(function () { document.getElementById('hero-online').textContent = 'Servidor acordando...'; });
+        get('/api/accounts/stats').then(function (d) {
+          document.getElementById('st-accounts').textContent = fmt(d.accounts);
+        }).catch(function () {});
+      }
+      function loadRanking() {
+        var box = document.getElementById('rank');
+        get('/api/ranking?limit=10').then(function (d) {
+          var rows = d.players || [];
+          box.innerHTML = rows.length ? rows.map(function (p, i) {
+            return '<div class="rank-row"><span class="pos">#' + (i + 1) + '</span><span><b>' + esc(p.name) + '</b></span><span class="lvl">Lv ' + fmt(p.level) + '</span></div>';
+          }).join('') : '<div class="rank-empty">Ninguém no ranking ainda. Seja o primeiro!</div>';
+        }).catch(function () { box.innerHTML = '<div class="rank-empty">O servidor está acordando. Recarregue em alguns segundos.</div>'; });
+      }
+      loadStats(); loadRanking();
+      setInterval(loadStats, 30000);
+
+      var embers = document.querySelector('.embers');
+      for (var i = 0; i < 26; i++) {
+        var s = document.createElement('span');
+        s.style.left = (Math.random() * 100) + '%';
+        s.style.animationDuration = (7 + Math.random() * 9) + 's';
+        s.style.animationDelay = (-Math.random() * 12) + 's';
+        embers.appendChild(s);
+      }
+
+      var items = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+        }, {threshold: .12});
+        items.forEach(function (x) { io.observe(x); });
+      } else items.forEach(function (x) { x.classList.add('in'); });
+    })();
+  </script>
 </body>
 </html>

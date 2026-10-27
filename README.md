@@ -1,8 +1,8 @@
-# DBO IDLE — versão jogável
+# Forgotten Lands
 
-Versão estática do DBO IDLE, um RPG idle de navegador inspirado em Dragon Ball Online. O jogo roda no cliente; um servidor leve opcional (`multiplayer-server/`) deixa várias pessoas juntas na mesma cidade.
+RPG idle multiplayer de navegador: contas salvas em PostgreSQL, cidade compartilhada com outros jogadores, 230+ hunts, bosses e transformações.
 
-**[▶ Jogar](https://alanfmf.github.io/dbo-idle-play/play/)** · [Wiki](https://alanfmf.github.io/dbo-idle-play/wiki/) · [Estudo de caso técnico](https://github.com/AlanFMF/dbo-idle-showcase)
+**[▶ Jogar](https://dbo-idle-multiplayer-server.onrender.com/)** · [Wiki](https://alanfmf.github.io/dbo-idle-play/wiki/)
 
 ## O que é isto
 
@@ -19,31 +19,41 @@ O que muda sem backend:
 
 Como o progresso vive no navegador, limpar os dados do site apaga a conta, e não há sincronização entre dispositivos.
 
+## Contas no banco de dados
+
+As contas e os personagens ficam no servidor (`multiplayer-server/accounts.js`):
+
+- Com a variável `DATABASE_URL` (PostgreSQL), tudo vai para as tabelas `fl_accounts`,
+  `fl_sessions` e `fl_characters`, criadas automaticamente na primeira execução.
+- Sem `DATABASE_URL` (ex.: rodando no PC para jogar na Wi-Fi), os dados ficam em
+  `multiplayer-server/data/accounts.json`.
+
+Senhas guardadas com scrypt, sessão por token. O jogo salva o personagem sozinho
+cerca de 1 s depois de cada mudança e ao fechar/minimizar a página. Quem tinha
+personagens salvos só no navegador e entra com o mesmo e-mail tem esses
+personagens importados para a conta.
+
 ## Multiplayer (cidade compartilhada)
 
-O progresso continua no navegador, mas a **cidade de Earth é compartilhada**: quem
-estiver conectado ao mesmo servidor aparece no mapa, anda em tempo real, fala no
-chat (com balão em cima do personagem) e entra na contagem de jogadores online.
-Quem está em hunt/treino some da cidade e volta quando retorna ao PZ.
+Quem estiver conectado ao mesmo servidor aparece na cidade de Earth, anda em tempo
+real, fala no chat (com balão em cima do personagem) e entra na contagem de
+jogadores online. Quem está em hunt/treino some da cidade e volta quando retorna ao PZ.
 
-### Jogar com dois celulares (mesma Wi-Fi)
+### Rodar o servidor
 
 ```bash
 npm install
 npm start
 ```
 
-O servidor mostra no terminal o endereço para abrir no celular, algo como
-`http://192.168.0.10:10000/play/`. Abra esse link nos dois telefones, crie um
-personagem em cada um e vocês vão se ver na cidade. Comando no chat: `/online`.
+O terminal mostra o endereço para abrir no celular (mesma Wi-Fi), algo como
+`http://192.168.0.10:10000/`. A raiz é a página inicial; o jogo fica em `/play/`.
+Comando no chat: `/online`.
 
-### Servidor na internet (Render, Railway, VPS...)
-
-`npm start` sobe tudo: o jogo e o WebSocket em `/ws`. O `render.yaml` já deixa
-pronto para o Render. Quem abrir o jogo pelo GitHub Pages conecta no servidor
-padrão; para apontar para outro, abra o jogo uma vez com
-`?server=wss://seu-servidor/ws` (fica salvo; `?server=auto` volta ao padrão e
-`?server=off` desliga o multiplayer).
+Na Render, o serviço web roda `npm start` e serve tudo: página inicial, jogo,
+API de contas e WebSocket (`/ws`). Sites estáticos (GitHub Pages ou o static
+site da Render) usam esse servidor automaticamente; para apontar para outro, abra
+o jogo uma vez com `?server=wss://seu-servidor/ws`.
 
 ## Estrutura
 

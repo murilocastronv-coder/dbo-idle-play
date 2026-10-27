@@ -1,5 +1,5 @@
 // =====================================================================
-// DBO IDLE - SocketClient social (multiplayer da cidade).
+// Forgotten Lands - SocketClient social (multiplayer da cidade).
 //
 // O progresso continua 100% no navegador, então `connected` fica SEMPRE
 // false: todo o app.js segue usando a lógica local de hunt, forja, loja...
@@ -48,6 +48,17 @@ export function resolveServerUrl() {
   if (STATIC_HOSTS.test(location.hostname)) return DEFAULT_REMOTE;
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${protocol}//${location.host}/ws`;
+}
+
+// Base HTTP das rotas /api (contas e personagens). Segue o mesmo servidor do
+// WebSocket, mas continua ativa com ?server=off (que só desliga a cidade).
+export function resolveApiBase() {
+  const saved = readStorage(STORAGE_KEY);
+  const fromQuery = new URL(location.href).searchParams.get('server');
+  const ws = [fromQuery, saved].find(value => value && /^wss?:\/\//i.test(value));
+  const target = ws || (STATIC_HOSTS.test(location.hostname) ? DEFAULT_REMOTE : null);
+  if (!target) return '';
+  return target.replace(/^ws/i, 'http').replace(/\/ws\/?$/, '');
 }
 
 // Jogador remoto. Posição e animação são getters: o renderer copia o ator a

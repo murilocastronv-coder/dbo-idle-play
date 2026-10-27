@@ -18,3 +18,6 @@ node_modules/
 # alanfmf.github.io/dbo-idle-play. Um CNAME commitado faria o Pages servir
 # num dominio que nao aponta mais para ca.
 CNAME
+
+# Contas salvas em arquivo quando o servidor roda sem DATABASE_URL
+multiplayer-server/data/

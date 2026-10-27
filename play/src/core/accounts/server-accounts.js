@@ -1,3 +1,14 @@
+// =====================================================================
+// Forgotten Lands - contas salvas no servidor (PostgreSQL).
+//
+// A sessao e um token Bearer guardado no navegador. Assim o mesmo codigo
+// funciona com o jogo servido pelo proprio servidor ou por um site estatico
+// (GitHub Pages / Render static) falando com o servidor em outro dominio.
+// =====================================================================
+import { resolveApiBase } from '../network/socket-client-social.js?v=22.6.0';
+
+const TOKEN_KEY = 'forgotten-lands-session-v1';
+const API_BASE = resolveApiBase();
 const LEGACY_ACCOUNTS_KEY = 'dbo-idle-mock-accounts-v1';
 const LEGACY_CHARACTER_KEY = 'dbo-idle-v12-12-save';
 const MAX_CHARACTERS = 10;
@@ -6,13 +17,24 @@ const saveTimers = new Map();
 const pendingStates = new Map();
 let lastSaveError = '';
 
+function readToken(){try{return localStorage.getItem(TOKEN_KEY)||'';}catch{return '';}}
+function writeToken(token){try{if(token)localStorage.setItem(TOKEN_KEY,token);else localStorage.removeItem(TOKEN_KEY);}catch{}}
+function authHeaders(){const token=readToken();return token?{Authorization:`Bearer ${token}`}:{};}
+
 async function api(path, options={}) {
-  const response = await fetch(path, {
-    credentials:'same-origin',
-    headers:{'Content-Type':'application/json', ...(options.headers||{})},
-    cache:'no-store',
-    ...options
-  });
+  let response;
+  try {
+    response = await fetch(API_BASE + path, {
+      cache:'no-store',
+      ...options,
+      headers:{'Content-Type':'application/json', ...authHeaders(), ...(options.headers||{})}
+    });
+  } catch {
+    // Render free hiberna: o primeiro acesso pode levar ~1 minuto.
+    const error = new Error('Nao foi possivel falar com o servidor. Ele pode estar acordando: tente de novo em alguns segundos.');
+    error.status = 0;
+    throw error;
+  }
   let body={};
   try { body=await response.json(); } catch {}
   if (!response.ok) {
@@ -88,6 +110,7 @@ export async function createAccount(email,password,code) {
     const result=await api('/api/auth/register',{
       method:'POST',body:JSON.stringify({email,password,code})
     });
+    writeToken(result.token);
     const migration=await migrateLegacyIfPossible(result.account);
     return {ok:true,account:migration.account,migration};
   } catch(error){return {ok:false,message:error.message,status:error.status}}
@@ -98,6 +121,7 @@ export async function loginAccount(email,password) {
     const result=await api('/api/auth/login',{
       method:'POST',body:JSON.stringify({email,password})
     });
+    writeToken(result.token);
     const migration=await migrateLegacyIfPossible(result.account);
     return {ok:true,account:migration.account,migration};
   } catch(error){return {ok:false,message:error.message}}
@@ -123,11 +147,13 @@ export async function resetAccountPassword(email,password,code) {
 
 export async function logoutAccount() {
   try { await api('/api/auth/logout',{method:'POST',body:'{}'}); } catch {}
+  writeToken('');
 }
 
 export async function currentAccount() {
+  if(!readToken())return null;
   try { return (await api('/api/account')).account || null; }
-  catch(error){ if(error.status!==401) console.warn('[DB] Sessao:',error.message); return null; }
+  catch(error){ if(error.status===401)writeToken(''); else console.warn('[DB] Sessao:',error.message); return null; }
 }
 
 export async function addCharacterToAccount(account, characterState) {
@@ -218,9 +244,9 @@ export function flushCharacterSaveOnUnload(characterId){
   const state=pendingStates.get(characterId);
   if(!state)return;
   pendingStates.delete(characterId);
-  fetch(`/api/characters/${encodeURIComponent(characterId)}/state`,{
-    method:'PUT',credentials:'same-origin',keepalive:true,
-    headers:{'Content-Type':'application/json'},body:JSON.stringify({state})
+  fetch(`${API_BASE}/api/characters/${encodeURIComponent(characterId)}/state`,{
+    method:'PUT',keepalive:true,
+    headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify({state})
   }).catch(()=>{});
 }
 

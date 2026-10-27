@@ -1,15 +1,14 @@
 // =====================================================================
-// DBO IDLE - Servidor multiplayer.
+// Forgotten Lands - Servidor do jogo.
 //
-// Faz duas coisas:
+// Faz três coisas:
 //   1. Serve o próprio jogo (landing, /play/ e wiki). Assim basta abrir
 //      http://IP-DO-PC:10000/play/ em dois celulares na mesma rede para
 //      jogar junto, sem precisar do GitHub Pages.
-//   2. WebSocket em /ws: presença na cidade (quem está online, posição,
+//   2. Contas e personagens salvos no banco (rotas /api, ver accounts.js).
+//   3. WebSocket em /ws: presença na cidade (quem está online, posição,
 //      direção e roupa), chat global da cidade e lista de jogadores.
 //
-// O progresso do personagem continua no navegador de cada um; o servidor
-// cuida só da parte social, que é o que precisa ser compartilhado.
 // =====================================================================
 const express = require('express');
 const http = require('http');
@@ -17,6 +16,7 @@ const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
 const WebSocket = require('ws');
+const { createAccountsRouter } = require('./accounts');
 
 const PORT = Number(process.env.PORT || 10000);
 const ROOT = path.resolve(__dirname, '..');
@@ -37,10 +37,11 @@ const startedAt = Date.now();
 // ---------------------------------------------------------------------
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -56,6 +57,10 @@ app.get('/api/online', (_req, res) => res.json({
     .filter(p => p.joined)
     .map(p => ({ name: p.name, level: p.level, room: p.room, activity: p.activity }))
 }));
+
+// Contas e personagens (PostgreSQL quando DATABASE_URL existir).
+const accounts = createAccountsRouter();
+app.use('/api', accounts.router);
 
 // Nada de expor o código do servidor, dependências ou metadados do git.
 const BLOCKED = /^\/(?:dbo-idle-play\/)?(?:multiplayer-server|node_modules|\.git|package(?:-lock)?\.json)(?:\/|$)/i;
@@ -73,7 +78,6 @@ const staticOptions = {
 // A landing e a wiki usam caminhos absolutos /dbo-idle-play/... (GitHub Pages),
 // então o mesmo conteúdo é servido nos dois prefixos.
 app.use('/dbo-idle-play', express.static(ROOT, staticOptions));
-app.get('/', (_req, res) => res.redirect('/play/'));
 app.use(express.static(ROOT, staticOptions));
 
 // ---------------------------------------------------------------------
@@ -337,7 +341,7 @@ function lanAddresses() {
 }
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`DBO IDLE multiplayer rodando na porta ${PORT}`);
+  console.log(`Forgotten Lands rodando na porta ${PORT}`);
   console.log(`  Neste PC:              http://localhost:${PORT}/play/`);
   for (const ip of lanAddresses()) {
     console.log(`  Celular (mesma Wi-Fi): http://${ip}:${PORT}/play/`);

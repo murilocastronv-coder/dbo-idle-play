@@ -1,5 +1,5 @@
 /* ==========================================================================
-   DBO IDLE Wiki — comportamento (V22)
+   Forgotten Lands Wiki — comportamento (V22)
    Compatível com o HTML já gerado: [data-menu], [data-nav], .data-card>header,
    [data-search], [data-filter], [data-search-row], [data-result-count],
    [data-empty]. Nada aqui depende de dados novos.
