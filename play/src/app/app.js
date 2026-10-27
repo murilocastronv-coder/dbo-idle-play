@@ -23,9 +23,11 @@ import {
   setContainerLootFilter,
   extractContainerTree,
   restoreContainerTree,
-  usedSlots
+  usedSlots,
+  freeSlots
 } from '../core/inventory/containers.js?v=22.4.4';
-import { SocketClient } from '../core/network/socket-client-social.js?v=22.6.1';
+import { SocketClient } from '../core/network/socket-client-social.js?v=22.8.0';
+import { spellHitPlan } from '../core/spells/authoritative-spell-runtime.js?v=22.4.4';
 import { isRarityEligibleItem, rarityAdjustedItem, rarityDefinition, rollItemRarity } from '../core/items/item-rarity.js';
 import { MapRenderer } from '../core/map/map-renderer.js?v=22.5.0';
 import { loadWebAssetStatus, loadWebManifest } from '../core/map/web-asset-loader.js';
@@ -963,6 +965,7 @@ export function createApp(root, options = {}) {
     onTradeState(next){tradeState=next;tradeInvite=null;tradeMessage='';playerContextTarget=null;render();},
     onTradeEvent(message){
       tradeMessage=String(message?.message||'');
+      if(['invited','error','expired'].includes(String(message?.event||''))&&!tradeState&&message?.message){log(message.message);}
       if(['completed','cancelled','declined'].includes(String(message?.event||''))){tradeState=null;tradeInvite=null;}
       if(message?.message)log(message.message);
       render();
@@ -1137,6 +1140,114 @@ export function createApp(root, options = {}) {
       persist();
     }
   });
+
+
+  // ------------------------------------------------------------------
+  // Trade e PvP entre jogadores. O servidor só intermedeia: quem lê e altera
+  // inventário, moedas e atributos é este cliente, através destas funções.
+  // ------------------------------------------------------------------
+  const premiumBalance=()=>Math.max(0,Number(state.profile.premiumPoints??state.profile.vipCredits??0));
+  function setPremiumBalance(value){
+    const next=Math.max(0,Math.floor(value));
+    state.profile.premiumPoints=next;
+    if(state.profile.vipCredits!=null)state.profile.vipCredits=next;
+  }
+  function tradeInventoryRows(){
+    return marketInventoryEntries()
+      .filter(row=>!row.entry.locked&&row.item.type!=='backpack')
+      .map(row=>({
+        key:`${row.containerId}|${row.index}`,
+        itemId:row.entry.itemId,
+        rarity:row.rarity,
+        instanceId:row.entry.instanceId||null,
+        quantity:Math.max(1,Number(row.entry.quantity||1))
+      }));
+  }
+  function tradeEntryFor(row){
+    const [containerId,index]=String(row?.key||'').split('|');
+    const found=findEntryByLocation(state,containerId,Number(index));
+    if(!found||found.entry.itemId!==row.itemId)return null;
+    if(row.instanceId&&String(found.entry.instanceId||'')!==String(row.instanceId))return null;
+    if(Number(found.entry.quantity||1)<Number(row.quantity||1)||found.entry.locked)return null;
+    return {containerId,index:Number(index),entry:found.entry};
+  }
+  function tradeCheck(give={},receive={}){
+    for(const row of give.items||[]){
+      if(!tradeEntryFor(row))return {ok:false,message:`${state.profile.name} não tem mais ${itemCatalog[row.itemId]?.name||row.itemId} no inventário.`};
+    }
+    if(Number(give.zeni||0)>Number(state.profile.bank||0))return {ok:false,message:`${state.profile.name} não tem Zeni suficiente.`};
+    if(Number(give.pp||0)>premiumBalance())return {ok:false,message:`${state.profile.name} não tem PP suficiente.`};
+    const free=inventoryContainers(state).reduce((sum,container)=>sum+freeSlots(container),0);
+    const freed=(give.items||[]).filter(row=>Number(tradeEntryFor(row)?.entry.quantity||0)===Number(row.quantity||1)).length;
+    if((receive.items||[]).length>free+freed)return {ok:false,message:`${state.profile.name} não tem espaço na backpack.`};
+    return {ok:true};
+  }
+  function tradeApply(give={},receive={}){
+    const removals=(give.items||[]).map(row=>({row,at:tradeEntryFor(row)})).filter(x=>x.at)
+      .sort((a,b)=>a.at.containerId===b.at.containerId?b.at.index-a.at.index:0);
+    for(const {row,at} of removals)removeEntryAt(state,at.containerId,at.index,Number(row.quantity||1));
+    state.profile.bank=Math.max(0,Number(state.profile.bank||0)-Number(give.zeni||0)+Number(receive.zeni||0));
+    setPremiumBalance(premiumBalance()-Number(give.pp||0)+Number(receive.pp||0));
+    for(const row of receive.items||[]){
+      addItemToInventory(state,row.itemId,Number(row.quantity||1),itemCatalog,null,{rarity:row.rarity||'common',instanceId:row.instanceId||null});
+    }
+    persist();
+    const got=(receive.items||[]).map(row=>`${row.quantity}× ${itemCatalog[row.itemId]?.name||row.itemId}`);
+    if(Number(receive.zeni||0))got.push(`${Number(receive.zeni).toLocaleString('pt-BR')} Zeni`);
+    if(Number(receive.pp||0))got.push(`${Number(receive.pp).toLocaleString('pt-BR')} PP`);
+    return {message:got.length?`Trade concluído. Você recebeu: ${got.join(', ')}.`:'Trade concluído.'};
+  }
+  function pvpSpellSheet(spell,kind){
+    if(!spell)return null;
+    let value=0;
+    try{
+      value=spellHitPlan({spell,state,character:characters[state.profile.characterId],direction:2})
+        .reduce((sum,hit)=>sum+Math.max(0,Number(hit.value||0)),0);
+    }catch{}
+    const maxKi=Math.max(1,Number(state.profile.maxKi||100));
+    const percent=Number(spell.kiCostPercent??spell.manaPercent??0);
+    const kiCost=spell.kiCostMode==='percent'&&percent>0?maxKi*percent/100:Number(spell.kiCost??spell.mana??0);
+    return {
+      id:spell.id,name:spell.name,kind,value,kiCost,
+      cooldownMs:Math.max(1000,Number(spell.cooldownMs||1000)),
+      range:Number(spell.range||0)>0?Number(spell.range):5,
+      durationMs:Number(spell.supportDurationMs||spell.durationMs||10000)
+    };
+  }
+  function pvpSheet(){
+    const stats=hunt?.combatStats?.()||{};
+    const char=characters[state.profile.characterId];
+    const attacks=(state.settings.spellBar?.slots||[]).slice(0,4)
+      .map(id=>allSpellsForCategory('attack').find(spell=>spell.id===id&&spellUnlocked(spell))||null);
+    const supports=['buff','speed','healing'].map(kind=>({kind,spell:supportSpell(kind)}));
+    const maxHp=Math.max(1,Number(state.profile.maxHp||state.hunt.playerMaxHp||100));
+    const maxKi=Math.max(1,Number(state.profile.maxKi||100));
+    return {
+      sprite:characterPortrait(char),
+      maxHp,maxKi,
+      attack:Math.max(1,Number(stats.attack||10)),
+      attackInterval:Math.max(300,Number(stats.attackInterval||1200)),
+      criticalChance:Math.max(0,Number(stats.criticalChance||0.05)),
+      attackRange:Math.max(1,Number(stats.attackRange||1)),
+      kiRegen:maxKi*0.02,
+      spells:[
+        ...attacks.map(spell=>pvpSpellSheet(spell,'attack')),
+        ...supports.map(({kind,spell})=>pvpSpellSheet(spell,kind))
+      ].filter(Boolean)
+    };
+  }
+  function pvpApplyResult(result={}){
+    if(result.won===true)state.profile.pvpWins=Number(state.profile.pvpWins||0)+1;
+    if(result.won===false)state.profile.pvpLosses=Number(state.profile.pvpLosses||0)+1;
+    const amount=Math.max(0,Number(result.wager?.amount||0));
+    if(amount>0&&result.won!=null){
+      const delta=result.won?amount:-amount;
+      if(result.wager.currency==='premium')setPremiumBalance(premiumBalance()+delta);
+      else state.profile.bank=Math.max(0,Number(state.profile.bank||0)+delta);
+    }
+    persist();
+  }
+  socket.setProviders({tradeInventory:tradeInventoryRows,tradeCheck,tradeApply,pvpSheet,pvpApplyResult});
 
   let hunt = null;
   const localHunt = createHuntEngine({
@@ -1921,8 +2032,15 @@ export function createApp(root, options = {}) {
 
   // Multiplayer da cidade: publica posição, atividade e visual atuais. O
   // SocketClient só manda o que mudou, então rodar a cada render é barato.
+  let lastProfileCardAt = 0;
   function syncSocialPresence() {
     try {
+      // Cartão público (aba Perfil para quem clicar em você): no máximo a cada 5 s.
+      if (socket.social && Date.now() - lastProfileCardAt > 5000) {
+        lastProfileCardAt = Date.now();
+        const { unlockedProfileIcons, unlockedProfileBorders, isSelf, ...card } = selfCharacterProfileData();
+        socket.sendProfileCard(card);
+      }
       const char = characters[state.profile.characterId];
       const activity = activeView === 'world' ? 'world' : String(activeView || 'world');
       socket.syncLocal({
@@ -5513,7 +5631,7 @@ export function createApp(root, options = {}) {
         <div class="pvp-actor own" style="${positionStyle(own)}"><span>${escapeHtml(own.name)}</span><img src="${escapeHtml(own.sprite||'./assets/generated/outfits/goku.webp')}" alt=""></div>
         <div class="pvp-actor enemy ${String(own.targetId||'')===String(enemy.id)?'targeted':''}" data-pvp-target-id="${escapeHtml(enemy.id)}" style="${positionStyle(enemy)}"><span>${escapeHtml(enemy.name)}</span><img src="${escapeHtml(enemy.sprite||'./assets/generated/outfits/goku.webp')}" alt=""><b class="pvp-target-label">TARGET</b></div>
       </div>
-      <div class="pvp-target-status ${pvpTargetParticipant()?'active':''}"><span>🎯 Target:</span><strong>${escapeHtml(pvpTargetParticipant()?.name||'Nenhum')}</strong><small>Clique com o botão direito no inimigo para selecionar.</small></div>
+      <div class="pvp-target-status ${pvpTargetParticipant()?'active':''}"><span>🎯 Target:</span><strong>${escapeHtml(pvpTargetParticipant()?.name||'Nenhum')}</strong><small>Toque no inimigo (ou botão direito) para selecionar. O duelo já começa com ele como target.</small></div>
       <div class="pvp-manual-help"><b>Controle:</b> botão direito no inimigo = target e ativa o ataque básico automático · WASD/setas ou clique na arena = andar · spells ofensivas usam o target escolhido · cura/buffs continuam manuais.</div>
       ${pvpMessage?`<div class="pvp-message compact">${escapeHtml(pvpMessage)}</div>`:''}
       <div class="pvp-hotbar"><section><label>TARGET / ATAQUE BÁSICO AUTO + SPELLS MANUAIS</label><div class="pvp-attack-actions">${pvpBasicAttackButton()}${attacks.map((spell,index)=>pvpSpellButton(spell,String(index+1))).join('')}</div></section><section><label>SUPORTE / CURA MANUAL</label><div>${supports.map((spell,index)=>pvpSpellButton(spell,['BUFF','SPEED','CURA'][index])).join('')}</div></section></div>
@@ -5763,16 +5881,16 @@ export function createApp(root, options = {}) {
     root.querySelectorAll('[data-player-context-close]').forEach(el=>el.addEventListener('click',()=>{playerContextTarget=null;tradeMessage='';render();}));
     root.querySelector('[data-player-profile]')?.addEventListener('click',event=>{
       const id=event.currentTarget.dataset.playerProfile;
-      if(!socket.connected){tradeMessage='O perfil de outro jogador requer conexão com o servidor.';render();return;}
+      if(!socket.connected&&!socket.social){tradeMessage='O perfil de outro jogador requer conexão com o servidor.';render();return;}
       socket.requestCharacterProfile(id);
     });
     root.querySelector('[data-player-trade]')?.addEventListener('click',event=>{
       const id=event.currentTarget.dataset.playerTrade;
-      if(!socket.connected){tradeMessage='O Trade requer conexão com o servidor.';render();return;}
+      if(!socket.connected&&!socket.social){tradeMessage='O Trade requer conexão com o servidor.';render();return;}
       socket.sendTradeAction('invite',{characterId:id});
     });
     root.querySelector('[data-player-pvp]')?.addEventListener('click',()=>{
-      if(!socket.connected){pvpMessage='O PvP requer conexão com o servidor.';render();return;}
+      if(!socket.connected&&!socket.social){pvpMessage='O PvP requer conexão com o servidor.';render();return;}
       if(activeView!=='world'){pvpMessage='Volte ao PZ antes de desafiar outro jogador.';render();return;}
       pvpMessage='Configure a aposta e escolha o jogador que deseja desafiar.';playerContextTarget=null;activeView='pvp';pvpLastResult=null;
       socket.sendPvpAction('status');render();
@@ -5864,18 +5982,24 @@ export function createApp(root, options = {}) {
     root.querySelector('[data-pvp-decline]')?.addEventListener('click',()=>{socket.sendPvpAction('decline');pvpInvite=null;render();});
     root.querySelector('[data-pvp-refresh]')?.addEventListener('click',()=>{pvpMessage='';pvpLastResult=null;socket.sendPvpAction('status');render();});
     root.querySelectorAll('[data-pvp-challenge]').forEach(button=>button.addEventListener('click',()=>{
-      if(!socket.connected){pvpMessage='O PvP requer conexão com o servidor.';render();return;}
+      if(!socket.connected&&!socket.social){pvpMessage='O PvP requer conexão com o servidor.';render();return;}
       pvpMessage='Enviando desafio PvP...';pvpLastResult=null;
       socket.sendPvpAction('challenge',{characterId:button.dataset.pvpChallenge,...pvpWagerPayload()});render();
+    }));
+    root.querySelectorAll('[data-pvp-target-id]').forEach(actor=>actor.addEventListener('click',event=>{
+      // Celular não tem botão direito: tocar no inimigo também seleciona o target.
+      event.stopPropagation();
+      if(!pvpState||(!socket.connected&&!socket.social))return;
+      socket.sendPvpAction('target',{targetId:actor.dataset.pvpTargetId});
     }));
     root.querySelectorAll('[data-pvp-target-id]').forEach(actor=>actor.addEventListener('contextmenu',event=>{
       event.preventDefault();
       event.stopPropagation();
-      if(!pvpState||!socket.connected)return;
+      if(!pvpState||(!socket.connected&&!socket.social))return;
       socket.sendPvpAction('target',{targetId:actor.dataset.pvpTargetId});
     }));
     root.querySelectorAll('[data-pvp-cast-spell]').forEach(button=>button.addEventListener('click',()=>{
-      if(!pvpState||!socket.connected)return;
+      if(!pvpState||(!socket.connected&&!socket.social))return;
       const spellId=button.dataset.pvpCastSpell;
       const spell=spells.find(row=>String(row.id)===String(spellId));
       const offensive=spell?.aggressive===true||spell?.runtimeKind==='damage';

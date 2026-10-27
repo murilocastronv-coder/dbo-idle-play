@@ -17,6 +17,7 @@ const crypto = require('crypto');
 const os = require('os');
 const WebSocket = require('ws');
 const { createAccountsRouter } = require('./accounts');
+const { attachInteractions } = require('./interactions');
 
 const PORT = Number(process.env.PORT || 10000);
 const ROOT = path.resolve(__dirname, '..');
@@ -184,6 +185,7 @@ function joinRoom(player, requestedRoom) {
 
 function leave(player) {
   if (!players.has(player.id)) return;
+  interactions.onLeave(player);
   players.delete(player.id);
   if (player.joined) {
     markDirty(player.room);
@@ -218,7 +220,10 @@ setInterval(() => {
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true, maxPayload: 16 * 1024 });
 
+const interactions = attachInteractions({ players, send });
+
 const handlers = {
+  ...interactions.handlers,
   join(player, msg) {
     applyProfile(player, msg.profile || msg);
     if (msg.position) applyPosition(player, msg.position);
