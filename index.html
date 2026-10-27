@@ -48,6 +48,9 @@
     .btn-gold:hover{box-shadow:0 12px 40px #f5c35b77, inset 0 1px 0 #fff8}
     .btn-ghost{border-color:#ffffff26;background:#ffffff08;color:var(--text)}
     .btn-sm{padding:9px 16px;font-size:14px}
+    .lang{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:#ffffff0a;border:1px solid #ffffff22;flex:none}
+    .lang button{all:unset;cursor:pointer;padding:6px 10px;border-radius:999px;font:800 12px/1 Inter,sans-serif;color:var(--muted);letter-spacing:.5px}
+    .lang button[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#2b1500}
 
     /* ---------- hero ---------- */
     .hero{position:relative;overflow:hidden;padding:72px 0 90px;isolation:isolate}
@@ -152,7 +155,7 @@
       .steps{grid-template-columns:repeat(2,1fr);row-gap:30px}
       .grid3{grid-template-columns:1fr}
       .nav{display:none}
-      .top .btn{margin-left:auto}
+      .lang{margin-left:auto}
       .screen{transform:none}
       .hero{padding-top:44px}
     }
@@ -161,7 +164,9 @@
       .bubble{display:none}
       section{padding:64px 0}
       .cta .btn{flex:1 1 100%}
-      .brand{font-size:17px}
+      .brand{font-size:15px}
+      .top .wrap{gap:10px}
+      .top .btn-sm{padding:8px 12px;font-size:13px}
       .screen{display:none}
       .showcase{padding-bottom:0}
       .phone{position:relative;right:auto;bottom:auto;width:72%;margin:0 auto}
@@ -180,6 +185,9 @@
         <a href="#ranking">Ranking</a>
         <a href="#faq">FAQ</a>
       </nav>
+      <div class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="pt">PT</button><button type="button" data-lang="en">EN</button>
+      </div>
       <a class="btn btn-gold btn-sm" href="./play/">Jogar agora</a>
     </div>
   </header>
@@ -347,6 +355,124 @@
 
   <script>
     (function () {
+      // ---------------- Idiomas: Português / English ----------------
+      // A página é escrita em PT; EN traduz cada texto pelo dicionário.
+      // O idioma escolhido fica salvo e vale também dentro do jogo.
+      var EN = {
+        'Forgotten Lands — RPG Idle Multiplayer no navegador': 'Forgotten Lands — Multiplayer Idle RPG in your browser',
+        'Como funciona': 'How it works', 'Recursos': 'Features', 'Guerreiros': 'Warriors', 'Ranking': 'Ranking', 'FAQ': 'FAQ',
+        'Jogar agora': 'Play now', 'Servidor online': 'Server online', 'jogando agora': 'playing now', 'Seja o 1º': 'Be the 1st',
+        'O RPG idle multiplayer que roda direto no navegador. Escolha seu guerreiro, cace monstros enquanto faz outra coisa, fique mais forte a cada transformação e encontre outros jogadores andando pela mesma cidade.': 'The multiplayer idle RPG that runs right in your browser. Pick your warrior, hunt monsters while you do something else, get stronger with every transformation and meet other players walking around the same city.',
+        '⚔ Jogar grátis': '⚔ Play for free', 'Ver como funciona': 'See how it works',
+        'contas criadas': 'accounts created', 'áreas de caça': 'hunting areas',
+        'Cidade de Forgotten Lands com três jogadores conversando': 'Forgotten Lands city with three players chatting',
+        'O jogo rodando no celular': 'The game running on a phone', 'Bora caçar juntos? ⚔': 'Wanna hunt together? ⚔',
+        'Do cadastro à primeira caçada em 1 minuto': 'From sign-up to your first hunt in 1 minute',
+        'Nada para baixar. Abra o link no celular ou no PC e comece. Seu progresso fica salvo na sua conta.': 'Nothing to download. Open the link on your phone or PC and start. Your progress is saved to your account.',
+        'Crie sua conta': 'Create your account',
+        'Só e-mail e senha. Seus personagens ficam guardados no servidor: entre de qualquer aparelho e continue de onde parou.': 'Just e-mail and password. Your characters are stored on the server: log in from any device and pick up where you left off.',
+        'Escolha seu guerreiro': 'Choose your warrior',
+        'Dezenas de vocações, cada uma com estilo próprio: luta corpo a corpo, ataques à distância ou híbrido.': 'Dozens of vocations, each with its own style: melee, ranged or hybrid.',
+        'Cace e evolua': 'Hunt and level up',
+        'Entre numa hunt e o combate acontece sozinho. Configure magias e poções no automático e veja o XP e o loot subirem.': 'Enter a hunt and combat plays itself. Set spells and potions on auto and watch XP and loot pile up.',
+        'Encontre a galera': 'Meet the crew',
+        'Volte para a cidade e veja outros jogadores andando ao seu lado, converse no chat e combine a próxima caçada.': 'Head back to town to see other players walking next to you, chat and plan the next hunt.',
+        'O que tem no jogo': 'What\'s in the game', 'Um mundo inteiro para conquistar': 'A whole world to conquer',
+        'Progressão longa, muita coisa para colecionar e uma cidade sempre cheia.': 'Long progression, lots to collect and a city that is always busy.',
+        'Multiplayer': 'Multiplayer', 'Uma cidade, todos os jogadores': 'One city, every player',
+        'Quando você entra no PZ, aparece para todo mundo que está online. Cada um com seu personagem, andando em tempo real.': 'When you enter the PZ, everyone online sees you. Each player with their own character, walking in real time.',
+        'Veja os outros andando pela cidade, com nome e roupa': 'See others walking around town, with name and outfit',
+        'Chat da cidade com balão de fala em cima do personagem': 'City chat with speech bubbles above characters',
+        'Comando': 'Command', 'para ver quem está conectado': 'to see who is online',
+        'Jogadores na cidade': 'Players in the city',
+        'Combate idle': 'Idle combat', 'Luta sozinho, você só colhe': 'It fights by itself, you reap the rewards',
+        'Escolha a área, quantos monstros puxar e quais magias usar. O combate roda automático, com cura e buffs no momento certo.': 'Pick the area, how many monsters to pull and which spells to use. Combat runs on its own, with healing and buffs at the right time.',
+        'Barra de magias com modo automático e alvo mínimo': 'Spell bar with auto mode and minimum targets',
+        'Poções de HP e KI configuráveis por porcentagem': 'HP and KI potions configurable by percentage',
+        'Analyser com XP/hora, loot e lucro da caçada': 'Analyser with XP/hour, loot and hunt profit',
+        'Combate em uma hunt': 'Combat in a hunt',
+        'Conteúdo': 'Content', '230+ hunts, bosses e quests': '230+ hunts, bosses and quests',
+        'Comece nos arredores da cidade e vá avançando para ruínas, florestas e terras cada vez mais perigosas.': 'Start on the outskirts of town and push on to ruins, forests and ever more dangerous lands.',
+        'Bosses com drops raros e bestiário para completar': 'Bosses with rare drops and a bestiary to complete',
+        'Transformações que mudam visual e atributos': 'Transformations that change your look and attributes',
+        'Forja, raridades de item, Game Pass e muito mais': 'Forge, item rarities, Game Pass and much more',
+        'Lista de hunts': 'Hunt list',
+        'Vocações': 'Vocations', 'Escolha quem você vai ser': 'Choose who you will be',
+        'Cada guerreiro tem escala própria de dano e uma linha de transformações para desbloquear.': 'Every warrior has its own damage scaling and a line of transformations to unlock.',
+        'Feito para jogar em qualquer lugar': 'Made to play anywhere', 'Seu progresso vai com você': 'Your progress goes with you',
+        'Conta salva na nuvem': 'Cloud-saved account',
+        'Tudo fica no banco de dados do servidor. Trocou de celular? É só entrar com o mesmo e-mail.': 'Everything lives in the server database. New phone? Just log in with the same e-mail.',
+        'Celular e PC': 'Phone and PC',
+        'A interface se adapta à tela. No celular, use "Adicionar à tela inicial" para abrir como um app.': 'The interface adapts to your screen. On your phone, use "Add to Home screen" to open it like an app.',
+        'Grátis': 'Free', 'Sem download e sem cadastro chato. Abriu, criou a conta, já está caçando.': 'No download and no annoying sign-up. Open it, create an account and you are already hunting.',
+        'Ranking ao vivo': 'Live ranking', 'Os mais fortes do servidor': 'The strongest on the server',
+        'Atualizado direto do banco de dados. Será que seu nome entra aqui?': 'Updated straight from the database. Will your name make it here?',
+        'Carregando ranking...': 'Loading ranking...', 'Ninguém no ranking ainda. Seja o primeiro!': 'Nobody on the ranking yet. Be the first!',
+        'Dúvidas': 'Questions', 'Perguntas frequentes': 'Frequently asked questions',
+        'Precisa baixar alguma coisa?': 'Do I need to download anything?',
+        'Não. Forgotten Lands roda no navegador, no celular ou no computador. É só abrir o link e jogar.': 'No. Forgotten Lands runs in the browser, on your phone or computer. Just open the link and play.',
+        'Meu progresso fica salvo?': 'Is my progress saved?',
+        'Sim. Sua conta e seus personagens ficam guardados no banco de dados do servidor, e o jogo salva sozinho enquanto você joga. Dá para entrar de outro aparelho com o mesmo e-mail e senha.': 'Yes. Your account and characters are stored in the server database, and the game saves automatically while you play. You can log in from another device with the same e-mail and password.',
+        'Como eu jogo com meus amigos?': 'How do I play with my friends?',
+        'Todo mundo que está conectado aparece na cidade (PZ). Vocês se veem andando, conversam pelo chat e podem combinar caçadas. Digite': 'Everyone who is online shows up in the city (PZ). You see each other walking, chat and plan hunts together. Type',
+        'no chat para ver quem está jogando.': 'in the chat to see who is playing.',
+        'O primeiro acesso demorou. É normal?': 'The first visit took a while. Is that normal?',
+        'O servidor dorme quando ninguém está jogando. Na primeira visita depois de um tempo ele pode levar até um minuto para acordar; depois disso fica rápido.': 'The server sleeps when nobody is playing. On the first visit after a while it can take up to a minute to wake up; after that it is fast.',
+        'Esqueci minha senha. E agora?': 'I forgot my password. Now what?',
+        'A recuperação por e-mail ainda não está disponível. Fale com o administrador do servidor para recuperar sua conta.': 'E-mail recovery is not available yet. Contact the server administrator to recover your account.',
+        'É pago?': 'Does it cost anything?', 'Não. O jogo é gratuito e feito por fãs, sem fins comerciais.': 'No. The game is free and made by fans, with no commercial purpose.',
+        'As terras esquecidas estão esperando': 'The forgotten lands are waiting',
+        'Crie seu personagem agora e seja o primeiro do ranking.': 'Create your character now and top the ranking.',
+        '⚔ Começar a jogar': '⚔ Start playing',
+        '© Forgotten Lands — projeto independente de fã, sem fins comerciais.': '© Forgotten Lands — independent fan project, non-commercial.',
+        'Jogar': 'Play', 'Aviso e créditos': 'Notice and credits'
+      };
+      var LANG_KEY = 'fl-lang';
+      var lang = (function () {
+        try {
+          var q = new URL(location.href).searchParams.get('lang');
+          if (q === 'pt' || q === 'en') { localStorage.setItem(LANG_KEY, q); return q; }
+          var saved = localStorage.getItem(LANG_KEY);
+          if (saved === 'pt' || saved === 'en') return saved;
+        } catch (e) {}
+        return /^pt\b/i.test(navigator.language || '') ? 'pt' : 'en';
+      })();
+      var onLang = [];
+      function t(pt) { return lang === 'en' && EN[pt] !== undefined ? EN[pt] : pt; }
+      var originals = []; // [nó, texto PT] / [elemento, 'alt', texto PT]
+      (function collect() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        var n;
+        while ((n = w.nextNode())) {
+          if (n.parentNode.nodeName === 'SCRIPT' || n.parentNode.nodeName === 'STYLE') continue;
+          var key = n.data.trim();
+          if (EN[key] !== undefined) originals.push([n, n.data]);
+        }
+        document.querySelectorAll('img[alt]').forEach(function (img) {
+          if (EN[img.alt] !== undefined) originals.push([img, 'alt', img.alt]);
+        });
+      })();
+      var ptTitle = document.title;
+      function applyLang() {
+        document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
+        document.title = t(ptTitle);
+        originals.forEach(function (o) {
+          if (o.length === 3) { o[0].setAttribute(o[1], t(o[2])); return; }
+          var pt = o[1], key = pt.trim();
+          o[0].data = lang === 'en' ? pt.replace(key, EN[key]) : pt;
+        });
+        document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+        onLang.forEach(function (fn) { fn(); });
+      }
+      document.querySelectorAll('.lang button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          lang = b.dataset.lang;
+          try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+          applyLang();
+        });
+      });
+      applyLang();
+
       // Mesmo servidor que o jogo usa. Aberta por outro domínio
       // (forgotten-lands.world, static site...), fala com o servidor público.
       var h = location.hostname;
@@ -363,14 +489,23 @@
       }).join('');
 
       function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-      function fmt(n) { return Number(n || 0).toLocaleString('pt-BR'); }
+      function fmt(n) { return Number(n || 0).toLocaleString(lang === 'en' ? 'en-US' : 'pt-BR'); }
       function get(path) { return fetch(API + path, {cache: 'no-store'}).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
+
+      var lastOnline = null;
+      function renderOnline() {
+        if (lastOnline === null) return;
+        // Ninguém online? Melhor um convite do que um "0" desanimado.
+        document.getElementById('st-online').textContent = lastOnline ? fmt(lastOnline) : t('Seja o 1º');
+        document.getElementById('hero-online').textContent = lastOnline ? fmt(lastOnline) + ' ' + t('jogando agora') : t('Servidor online');
+      }
+      onLang.push(function () { renderOnline(); loadRanking(); });
 
       function loadStats() {
         get('/api/stats').then(function (d) {
           // Ninguém online? Melhor um convite do que um "0" desanimado.
-          document.getElementById('st-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) : 'Seja o 1º';
-          document.getElementById('hero-online').textContent = d.onlinePlayers ? fmt(d.onlinePlayers) + ' jogando agora' : 'Servidor online';
+          lastOnline = d.onlinePlayers || 0;
+          renderOnline();
         }).catch(function () {
           // O plano grátis hiberna: o primeiro pedido acorda o servidor. Tenta
           // de novo logo em vez de mostrar erro.
@@ -386,7 +521,7 @@
           var rows = d.players || [];
           box.innerHTML = rows.length ? rows.map(function (p, i) {
             return '<div class="rank-row"><span class="pos">#' + (i + 1) + '</span><span><b>' + esc(p.name) + '</b></span><span class="lvl">Lv ' + fmt(p.level) + '</span></div>';
-          }).join('') : '<div class="rank-empty">Ninguém no ranking ainda. Seja o primeiro!</div>';
+          }).join('') : '<div class="rank-empty">' + t('Ninguém no ranking ainda. Seja o primeiro!') + '</div>';
         }).catch(function () { setTimeout(loadRanking, 8000); });
       }
       loadStats(); loadRanking();
